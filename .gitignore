@@ -1,10 +1,27 @@
-
-venv/
-.venv/
+```gitignore
+# Python cache files
 __pycache__/
 *.py[cod]
+
+# Virtual environments
+venv/
+.venv/
+env/
+
+# Environment variables and secrets
 .env
-instance/
-attendance.db
+.env.*
+!.env.example
+
+# Local databases
+*.db
 *.sqlite
 *.sqlite3
+instance/*.db
+
+# Editor and operating system files
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+```
