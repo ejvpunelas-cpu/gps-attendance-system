@@ -39,16 +39,26 @@ app.config['SQLALCHEMY_DATABASE_URI'] = database_url
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db = SQLAlchemy(app)
-# FIX missing column - auto adds 'section' if not exists on Render
+# AUTO-FIX: add all missing columns on Render Postgres
 from sqlalchemy import text
 with app.app_context():
-    try:
-        db.session.execute(text('ALTER TABLE "user" ADD COLUMN IF NOT EXISTS section VARCHAR(100)'))
-        db.session.commit()
-        print("COLUMN FIXED: section added")
-    except Exception as e:
-        print(f"Fix skipped: {e}")
-        db.session.rollback()
+    fixes = [
+        'ALTER TABLE "user" ADD COLUMN IF NOT EXISTS section VARCHAR(100)',
+        'ALTER TABLE attendance ADD COLUMN IF NOT EXISTS schedule_id INTEGER',
+        'ALTER TABLE attendance ADD COLUMN IF NOT EXISTS attendance_date DATE',
+        'ALTER TABLE attendance ADD COLUMN IF NOT EXISTS check_in_time TIMESTAMP',
+        'ALTER TABLE attendance ADD COLUMN IF NOT EXISTS check_out_time TIMESTAMP',
+        'ALTER TABLE attendance ADD COLUMN IF NOT EXISTS status VARCHAR(50)',
+        'ALTER TABLE attendance ADD COLUMN IF NOT EXISTS last_inside_at TIMESTAMP',
+        'ALTER TABLE attendance ADD COLUMN IF NOT EXISTS departure_alerted BOOLEAN DEFAULT FALSE'
+    ]
+    for sql in fixes:
+        try:
+            db.session.execute(text(sql))
+            db.session.commit()
+        except Exception as e:
+            db.session.rollback()
+            print(f"Fix skipped: {sql} -> {e}")
 TEACHER_CODE = os.environ.get(
     'TEACHER_CODE',
     'TEACHER2026'
