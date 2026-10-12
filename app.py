@@ -3,23 +3,22 @@ import os
 import math
 from datetime import datetime
 
-from flask import Flask, render_template, request, redirect, url_for, session, jsonify
+from flask import Flask, render_template, request, redirect, url_for, session
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
 
 app = Flask(__name__)
 
-# Use a secret stored in Render's environment settings.
-# The fallback is only for local development.
 app.config["SECRET_KEY"] = os.environ.get(
     "SECRET_KEY",
     "local-development-key-change-this"
 )
 
-# Use PostgreSQL online, or SQLite when running locally.
-database_url = os.environ.get("DATABASE_URL", "sqlite:///attendance.db")
+database_url = os.environ.get(
+    "DATABASE_URL",
+    "sqlite:///attendance.db"
+)
 
-# Support connection URLs that start with postgres://
 if database_url.startswith("postgres://"):
     database_url = database_url.replace(
         "postgres://", "postgresql://", 1
@@ -30,7 +29,6 @@ app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
 db = SQLAlchemy(app)
 
-# Set these in Render instead of keeping the teacher code in public code.
 TEACHER_CODE = os.environ.get("TEACHER_CODE", "TEACHER2026")
 
 CAMPUS_LATITUDE = 14.148458
@@ -61,12 +59,12 @@ def calculate_distance(lat1, lon1, lat2, lon2):
         * math.sin(difference_lon / 2) ** 2
     )
 
-    # Protect against tiny floating-point rounding errors
     a = max(0, min(1, a))
 
     c = 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
 
     return earth_radius * c
+
 
 # ==========================================
 # DATABASE MODELS
@@ -104,18 +102,15 @@ class Attendance(db.Model):
 with app.app_context():
     db.create_all()
 
+
 # ==========================================
-# HOME
+# WELCOME SCREEN
 # ==========================================
 
 @app.route("/")
 def home():
-    return """
-    <h1>GPS Attendance System</h1>
-    <p>Student Attendance Monitoring System</p>
-    <a href="/register">Create Account</a><br><br>
-    <a href="/login">Log In</a>
-    """
+    return render_template("home.html")
+
 
 # ==========================================
 # REGISTER
@@ -160,10 +155,6 @@ def register():
 
     return render_template("register.html", message=message)
 
-# ==========================================
-# LOGIN
-# ==========================================
-
 
 # ==========================================
 # LOGIN
@@ -189,6 +180,7 @@ def login():
         message = "Incorrect username or password."
 
     return render_template("login.html", message=message)
+
 
 # ==========================================
 # DASHBOARD
@@ -216,6 +208,7 @@ def dashboard():
         message=message
     )
 
+
 # ==========================================
 # GPS CHECK-IN
 # ==========================================
@@ -228,18 +221,17 @@ def check_in():
     if session.get("role") != "student":
         return redirect(url_for("dashboard"))
 
-    # Read GPS values sent by the dashboard form
     try:
         latitude = float(request.form.get("latitude", ""))
         longitude = float(request.form.get("longitude", ""))
         accuracy = float(request.form.get("accuracy", ""))
+
     except (TypeError, ValueError):
         session["gps_message"] = (
             "GPS data is missing. Please use the GPS check-in button."
         )
         return redirect(url_for("dashboard"))
 
-    # Validate the submitted numbers
     if not (
         math.isfinite(latitude)
         and math.isfinite(longitude)
@@ -253,7 +245,6 @@ def check_in():
         )
         return redirect(url_for("dashboard"))
 
-    # Require sufficiently accurate GPS
     if accuracy > MAX_GPS_ACCURACY_METERS:
         session["gps_message"] = (
             "Your GPS accuracy is too low. "
@@ -261,7 +252,6 @@ def check_in():
         )
         return redirect(url_for("dashboard"))
 
-    # Calculate distance from the provisional campus center
     distance = calculate_distance(
         CAMPUS_LATITUDE,
         CAMPUS_LONGITUDE,
@@ -269,7 +259,6 @@ def check_in():
         longitude
     )
 
-    # Check whether the reported location is within the radius
     if distance > CAMPUS_RADIUS_METERS:
         session["gps_message"] = (
             "Your reported location appears outside the campus boundary. "
@@ -277,7 +266,6 @@ def check_in():
         )
         return redirect(url_for("dashboard"))
 
-    # Prevent duplicate attendance for the same day
     today = datetime.now().date()
 
     existing = Attendance.query.filter_by(
@@ -291,7 +279,6 @@ def check_in():
         )
         return redirect(url_for("dashboard"))
 
-    # Save attendance only after the GPS checks pass
     record = Attendance(
         user_id=session["user_id"],
         attendance_date=today,
@@ -302,6 +289,7 @@ def check_in():
     try:
         db.session.add(record)
         db.session.commit()
+
     except Exception:
         db.session.rollback()
         session["gps_message"] = (
@@ -315,6 +303,7 @@ def check_in():
 
     return redirect(url_for("dashboard"))
 
+
 # ==========================================
 # GPS TEST PAGE
 # ==========================================
@@ -326,6 +315,7 @@ def gps_test():
 
     return render_template("gps_test.html")
 
+
 # ==========================================
 # LOGOUT
 # ==========================================
@@ -335,10 +325,10 @@ def logout():
     session.clear()
     return redirect(url_for("login"))
 
+
 # ==========================================
 # RUN APP
 # ==========================================
-
 
 if __name__ == "__main__":
     app.run(
