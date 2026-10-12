@@ -1,0 +1,502 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Log In | Campus Attendance</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        :root {
+            --maroon: #741d35;
+            --maroon-dark: #511226;
+            --gold: #e6b65c;
+            --background: #f6f5f7;
+            --text: #29252b;
+            --muted: #85808a;
+            --border: #e8e3e9;
+        }
+
+        body {
+            min-height: 100vh;
+            font-family: "Segoe UI", Arial, sans-serif;
+            background: var(--background);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 24px;
+        }
+
+        .page {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            width: 100%;
+            max-width: 960px;
+            min-height: 570px;
+            background: white;
+            border-radius: 22px;
+            overflow: hidden;
+            box-shadow: 0 15px 50px rgba(55, 20, 35, 0.12);
+        }
+
+        /* LEFT PANEL */
+
+        .welcome-panel {
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding: 42px;
+            color: white;
+            background: linear-gradient(145deg, #8b2944, #511226);
+        }
+
+        .welcome-panel::before {
+            content: "";
+            position: absolute;
+            width: 330px;
+            height: 330px;
+            right: -150px;
+            top: 110px;
+            border: 45px solid rgba(255, 255, 255, 0.06);
+            border-radius: 50%;
+        }
+
+        .welcome-panel::after {
+            content: "";
+            position: absolute;
+            width: 190px;
+            height: 190px;
+            right: -65px;
+            top: 175px;
+            border: 1px solid rgba(230, 182, 92, 0.35);
+            border-radius: 50%;
+        }
+
+        .brand {
+            position: relative;
+            z-index: 1;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .brand-icon {
+            width: 46px;
+            height: 46px;
+            display: grid;
+            place-items: center;
+            border-radius: 12px;
+            background: var(--gold);
+            color: var(--maroon-dark);
+            font-size: 23px;
+            font-weight: bold;
+        }
+
+        .brand h2 {
+            font-size: 16px;
+        }
+
+        .brand p {
+            margin-top: 5px;
+            font-size: 10px;
+            letter-spacing: 1px;
+            color: #e9d2d9;
+        }
+
+        .welcome-content {
+            position: relative;
+            z-index: 1;
+            margin: 45px 0;
+        }
+
+        .eyebrow {
+            color: var(--gold);
+            font-size: 11px;
+            font-weight: bold;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            margin-bottom: 17px;
+        }
+
+        .welcome-content h1 {
+            max-width: 350px;
+            font-size: 37px;
+            line-height: 1.2;
+            margin-bottom: 20px;
+        }
+
+        .welcome-content p {
+            max-width: 330px;
+            color: #eadce0;
+            font-size: 14px;
+            line-height: 1.9;
+        }
+
+        .feature {
+            position: relative;
+            z-index: 1;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 16px;
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+        }
+
+        .feature-icon {
+            font-size: 24px;
+        }
+
+        .feature strong {
+            display: block;
+            font-size: 13px;
+            margin-bottom: 5px;
+        }
+
+        .feature span {
+            font-size: 11px;
+            color: #eadce0;
+            line-height: 1.5;
+        }
+
+        /* RIGHT PANEL */
+
+        .form-panel {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 45px;
+        }
+
+        .form-content {
+            width: 100%;
+            max-width: 340px;
+        }
+
+        .mobile-brand {
+            display: none;
+        }
+
+        .form-content h2 {
+            font-size: 29px;
+            margin-bottom: 10px;
+            color: var(--text);
+        }
+
+        .subtitle {
+            color: var(--muted);
+            font-size: 13px;
+            line-height: 1.7;
+            margin-bottom: 32px;
+        }
+
+        .message {
+            margin-bottom: 20px;
+            padding: 13px;
+            border: 1px solid #e8c4cc;
+            background: #fff2f4;
+            color: #8c203b;
+            border-radius: 8px;
+            font-size: 13px;
+            line-height: 1.5;
+        }
+
+        .field {
+            margin-bottom: 20px;
+        }
+
+        .field label {
+            display: block;
+            font-size: 13px;
+            font-weight: 600;
+            margin-bottom: 9px;
+        }
+
+        .field input {
+            width: 100%;
+            padding: 14px;
+            border: 1px solid var(--border);
+            border-radius: 9px;
+            background: #fcfbfc;
+            outline: none;
+            font-family: inherit;
+            font-size: 14px;
+            transition: border 0.2s, box-shadow 0.2s;
+        }
+
+        .field input:focus {
+            border-color: var(--maroon);
+            box-shadow: 0 0 0 3px rgba(116, 29, 53, 0.09);
+        }
+
+        .password-wrap {
+            position: relative;
+        }
+
+        .password-wrap input {
+            padding-right: 65px;
+        }
+
+        .toggle-password {
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            border: none;
+            background: transparent;
+            color: var(--maroon);
+            font-size: 12px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .login-button {
+            width: 100%;
+            padding: 15px;
+            margin-top: 7px;
+            border: none;
+            border-radius: 9px;
+            background: var(--maroon);
+            color: white;
+            font-size: 14px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.2s, transform 0.2s;
+        }
+
+        .login-button:hover {
+            background: var(--maroon-dark);
+            transform: translateY(-1px);
+        }
+
+        .divider {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin: 25px 0;
+            color: #aaa3ad;
+            font-size: 11px;
+        }
+
+        .divider::before,
+        .divider::after {
+            content: "";
+            flex: 1;
+            height: 1px;
+            background: var(--border);
+        }
+
+        .register-text {
+            text-align: center;
+            color: var(--muted);
+            font-size: 13px;
+        }
+
+        .register-text a {
+            color: var(--maroon);
+            font-weight: bold;
+            text-decoration: none;
+        }
+
+        .register-text a:hover {
+            text-decoration: underline;
+        }
+
+        .security-note {
+            margin-top: 32px;
+            text-align: center;
+            color: #99919c;
+            font-size: 11px;
+            line-height: 1.7;
+        }
+
+        @media (max-width: 700px) {
+            body {
+                padding: 15px;
+                align-items: flex-start;
+            }
+
+            .page {
+                display: block;
+                max-width: 430px;
+                min-height: auto;
+                margin: auto;
+                border-radius: 17px;
+            }
+
+            .welcome-panel {
+                display: none;
+            }
+
+            .form-panel {
+                padding: 30px 24px;
+            }
+
+            .mobile-brand {
+                display: flex;
+                align-items: center;
+                gap: 11px;
+                margin-bottom: 35px;
+            }
+
+            .mobile-brand .brand-icon {
+                width: 41px;
+                height: 41px;
+            }
+
+            .mobile-brand h3 {
+                font-size: 15px;
+                color: var(--maroon-dark);
+            }
+
+            .mobile-brand p {
+                font-size: 10px;
+                margin-top: 4px;
+                color: var(--muted);
+            }
+
+            .form-content h2 {
+                font-size: 27px;
+            }
+
+            .subtitle {
+                margin-bottom: 26px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="page">
+
+    <section class="welcome-panel">
+        <div class="brand">
+            <div class="brand-icon">A</div>
+            <div>
+                <h2>Campus Attendance</h2>
+                <p>STUDENT MONITORING SYSTEM</p>
+            </div>
+        </div>
+
+        <div class="welcome-content">
+            <div class="eyebrow">WELCOME BACK</div>
+            <h1>Your campus. Your attendance. All in one place.</h1>
+            <p>
+                Access your attendance portal and keep track of your
+                daily check-ins through a simple GPS-based system.
+            </p>
+        </div>
+
+        <div class="feature">
+            <div class="feature-icon">⌖</div>
+            <div>
+                <strong>Location-based attendance</strong>
+                <span>Check in when you're within the permitted campus area.</span>
+            </div>
+        </div>
+    </section>
+
+    <section class="form-panel">
+        <div class="form-content">
+
+            <div class="mobile-brand">
+                <div class="brand-icon">A</div>
+                <div>
+                    <h3>Campus Attendance</h3>
+                    <p>STUDENT MONITORING SYSTEM</p>
+                </div>
+            </div>
+
+            <h2>Sign in</h2>
+            <p class="subtitle">
+                Enter your account details to continue to your dashboard.
+            </p>
+
+            {% if message %}
+            <div class="message" role="alert">{{ message }}</div>
+            {% endif %}
+
+            <form method="POST" action="{{ url_for('login') }}">
+
+                <div class="field">
+                    <label for="username">Username</label>
+                    <input
+                        type="text"
+                        id="username"
+                        name="username"
+                        placeholder="Enter your username"
+                        autocomplete="username"
+                        required>
+                </div>
+
+                <div class="field">
+                    <label for="password">Password</label>
+
+                    <div class="password-wrap">
+                        <input
+                            type="password"
+                            id="password"
+                            name="password"
+                            placeholder="Enter your password"
+                            autocomplete="current-password"
+                            required>
+
+                        <button
+                            type="button"
+                            class="toggle-password"
+                            id="togglePassword"
+                            onclick="togglePasswordVisibility()">
+                            Show
+                        </button>
+                    </div>
+                </div>
+
+                <button type="submit" class="login-button">
+                    Sign In &nbsp; →
+                </button>
+            </form>
+
+            <div class="divider">NEW TO THE PORTAL?</div>
+
+            <p class="register-text">
+                Don't have an account?
+                <a href="{{ url_for('register') }}">Create one</a>
+            </p>
+
+            <div class="security-note">
+                Campus Attendance Portal<br>
+                Sign in only with your own account.
+            </div>
+
+        </div>
+    </section>
+
+</div>
+
+<script>
+    function togglePasswordVisibility() {
+        const password = document.getElementById("password");
+        const button = document.getElementById("togglePassword");
+
+        if (password.type === "password") {
+            password.type = "text";
+            button.textContent = "Hide";
+        } else {
+            password.type = "password";
+            button.textContent = "Show";
+        }
+    }
+</script>
+
+</body>
+</html>

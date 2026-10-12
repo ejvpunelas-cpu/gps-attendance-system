@@ -1,0 +1,72 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Register - GPS Attendance</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <style>
+        body {
+            font-family: Arial;
+            background: #f0f4f8;
+            padding: 30px 15px;
+        }
+
+        .container {
+            background: white;
+            max-width: 350px;
+            margin: auto;
+            padding: 25px;
+            border-radius: 12px;
+        }
+
+        input, select, button {
+            box-sizing: border-box;
+            width: 100%;
+            padding: 12px;
+            margin-top: 12px;
+        }
+
+        button {
+            background: #2563eb;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+
+        a {
+            color: #2563eb;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Create Account</h2>
+        <p>{{ message }}</p>
+
+        <form method="POST">
+            <input type="text" name="username"
+                   placeholder="Username" required>
+
+            <input type="password" name="password"
+                   placeholder="Password" required>
+
+            <select name="role" required>
+                <option value="student">Student</option>
+                <option value="teacher">Teacher</option>
+            </select>
+
+            <input type="text" name="teacher_code"
+                   placeholder="Teacher authorization code (if applicable)">
+
+            <button type="submit">Register</button>
+        </form>
+
+        <p>Already have an account?
+            <a href="/login">Log in</a>
+        </p>
+
+        <p><a href="/">Back to Home</a></p>
+    </div>
+</body>
+</html>
