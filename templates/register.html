@@ -1,546 +1,201 @@
+```html
+{% extends "base.html" %}
 
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Create Account | Campus Attendance</title>
+{% block title %}Register | Campus Classroom{% endblock %}
 
-    <style>
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
-
-        :root {
-            --maroon: #741d35;
-            --maroon-dark: #511226;
-            --gold: #e6b65c;
-            --background: #f6f5f7;
-            --text: #29252b;
-            --muted: #85808a;
-            --border: #e8e3e9;
-        }
-
-        body {
-            min-height: 100vh;
-            font-family: "Segoe UI", Arial, sans-serif;
-            background: var(--background);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 24px;
-        }
-
-        .page {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            width: 100%;
-            max-width: 960px;
-            min-height: 610px;
-            background: white;
-            border-radius: 22px;
-            overflow: hidden;
-            box-shadow: 0 15px 50px rgba(55, 20, 35, 0.12);
-        }
-
-        .welcome-panel {
-            position: relative;
-            overflow: hidden;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            padding: 42px;
-            color: white;
-            background: linear-gradient(145deg, #8b2944, #511226);
-        }
-
-        .welcome-panel::before {
-            content: "";
-            position: absolute;
-            width: 330px;
-            height: 330px;
-            right: -150px;
-            top: 110px;
-            border: 45px solid rgba(255,255,255,0.06);
-            border-radius: 50%;
-        }
-
-        .welcome-panel::after {
-            content: "";
-            position: absolute;
-            width: 190px;
-            height: 190px;
-            right: -65px;
-            top: 175px;
-            border: 1px solid rgba(230,182,92,0.35);
-            border-radius: 50%;
-        }
-
-        .brand {
-            position: relative;
-            z-index: 1;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
-        .brand-icon {
-            width: 46px;
-            height: 46px;
-            display: grid;
-            place-items: center;
-            border-radius: 12px;
-            background: var(--gold);
-            color: var(--maroon-dark);
-            font-size: 23px;
-            font-weight: bold;
-            flex-shrink: 0;
-        }
-
-        .brand h2 {
-            font-size: 16px;
-        }
-
-        .brand p {
-            margin-top: 5px;
-            font-size: 10px;
-            letter-spacing: 1px;
-            color: #e9d2d9;
-        }
-
-        .welcome-content {
-            position: relative;
-            z-index: 1;
-            margin: 45px 0;
-        }
-
-        .eyebrow {
-            color: var(--gold);
-            font-size: 11px;
-            font-weight: bold;
-            letter-spacing: 2px;
-            margin-bottom: 17px;
-        }
-
-        .welcome-content h1 {
-            max-width: 350px;
-            font-size: 37px;
-            line-height: 1.2;
-            margin-bottom: 20px;
-        }
-
-        .welcome-content p {
-            max-width: 330px;
-            color: #eadce0;
-            font-size: 14px;
-            line-height: 1.9;
-        }
-
-        .feature {
-            position: relative;
-            z-index: 1;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            padding: 16px;
-            background: rgba(255,255,255,0.08);
-            border: 1px solid rgba(255,255,255,0.1);
-            border-radius: 12px;
-        }
-
-        .feature-icon {
-            font-size: 24px;
-        }
-
-        .feature strong {
-            display: block;
-            font-size: 13px;
-            margin-bottom: 5px;
-        }
-
-        .feature span {
-            font-size: 11px;
-            color: #eadce0;
-            line-height: 1.5;
-        }
-
-        .form-panel {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 40px;
-        }
-
-        .form-content {
-            width: 100%;
-            max-width: 340px;
-        }
-
-        .mobile-brand {
-            display: none;
-        }
-
-        .form-content h2 {
-            font-size: 29px;
-            margin-bottom: 10px;
-            color: var(--text);
-        }
-
-        .subtitle {
-            color: var(--muted);
-            font-size: 13px;
-            line-height: 1.7;
-            margin-bottom: 25px;
-        }
-
-        .message {
-            margin-bottom: 18px;
-            padding: 13px;
-            border: 1px solid #e8c4cc;
-            background: #fff2f4;
-            color: #8c203b;
-            border-radius: 8px;
-            font-size: 13px;
-            line-height: 1.5;
-        }
-
-        .field {
-            margin-bottom: 17px;
-        }
-
-        .field label {
-            display: block;
-            font-size: 13px;
-            font-weight: 600;
-            margin-bottom: 9px;
-        }
-
-        .field input,
-        .field select {
-            width: 100%;
-            padding: 13px;
-            border: 1px solid var(--border);
-            border-radius: 9px;
-            background: #fcfbfc;
-            outline: none;
-            font-family: inherit;
-            font-size: 14px;
-            color: var(--text);
-            transition: border 0.2s, box-shadow 0.2s;
-        }
-
-        .field input:focus,
-        .field select:focus {
-            border-color: var(--maroon);
-            box-shadow: 0 0 0 3px rgba(116,29,53,0.09);
-        }
-
-        .password-wrap {
-            position: relative;
-        }
-
-        .password-wrap input {
-            padding-right: 65px;
-        }
-
-        .toggle-password {
-            position: absolute;
-            right: 12px;
-            top: 50%;
-            transform: translateY(-50%);
-            border: none;
-            background: transparent;
-            color: var(--maroon);
-            font-size: 12px;
-            font-weight: bold;
-            cursor: pointer;
-        }
-
-        .hint {
-            display: block;
-            color: var(--muted);
-            font-size: 11px;
-            margin-top: 7px;
-        }
-
-        .register-button {
-            width: 100%;
-            padding: 15px;
-            margin-top: 5px;
-            border: none;
-            border-radius: 9px;
-            background: var(--maroon);
-            color: white;
-            font-size: 14px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: background 0.2s, transform 0.2s;
-        }
-
-        .register-button:hover {
-            background: var(--maroon-dark);
-            transform: translateY(-1px);
-        }
-
-        .divider {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            margin: 23px 0;
-            color: #aaa3ad;
-            font-size: 11px;
-        }
-
-        .divider::before,
-        .divider::after {
-            content: "";
-            flex: 1;
-            height: 1px;
-            background: var(--border);
-        }
-
-        .login-text {
-            text-align: center;
-            color: var(--muted);
-            font-size: 13px;
-        }
-
-        .login-text a {
-            color: var(--maroon);
-            font-weight: bold;
-            text-decoration: none;
-        }
-
-        .login-text a:hover {
-            text-decoration: underline;
-        }
-
-        .security-note {
-            margin-top: 25px;
-            text-align: center;
-            color: #99919c;
-            font-size: 11px;
-            line-height: 1.7;
-        }
-
-        @media (max-width: 700px) {
-            body {
-                padding: 15px;
-                align-items: flex-start;
-            }
-
-            .page {
-                display: block;
-                max-width: 430px;
-                min-height: auto;
-                margin: auto;
-                border-radius: 17px;
-            }
-
-            .welcome-panel {
-                display: none;
-            }
-
-            .form-panel {
-                padding: 30px 24px;
-            }
-
-            .mobile-brand {
-                display: flex;
-                align-items: center;
-                gap: 11px;
-                margin-bottom: 30px;
-            }
-
-            .mobile-brand .brand-icon {
-                width: 41px;
-                height: 41px;
-            }
-
-            .mobile-brand h3 {
-                font-size: 15px;
-                color: var(--maroon-dark);
-            }
-
-            .mobile-brand p {
-                font-size: 10px;
-                margin-top: 4px;
-                color: var(--muted);
-            }
-
-            .form-content h2 {
-                font-size: 27px;
-            }
-        }
-    </style>
-</head>
-
-<body>
-<div class="page">
-
-    <section class="welcome-panel">
-        <div class="brand">
-            <div class="brand-icon">A</div>
-            <div>
-                <h2>Campus Attendance</h2>
-                <p>STUDENT MONITORING SYSTEM</p>
-            </div>
+{% block content %}
+<section class="auth-container">
+    <div class="auth-card">
+        <div class="auth-header">
+            <img
+                src="{{ url_for('static', filename='images/pup-logo.png') }}"
+                alt="PUP Calauan Logo"
+                class="auth-logo"
+                onerror="this.style.display='none'"
+            >
+            <h1>Create Account</h1>
+            <p>Register for Campus Classroom.</p>
         </div>
 
-        <div class="welcome-content">
-            <div class="eyebrow">JOIN YOUR CAMPUS PORTAL</div>
-            <h1>Start your attendance journey here.</h1>
-            <p>
-                Create your account to access the Campus Attendance
-                Portal and use its attendance features.
-            </p>
-        </div>
-
-        <div class="feature">
-            <div class="feature-icon">⌖</div>
-            <div>
-                <strong>Simple and secure access</strong>
-                <span>Use your own account to access the attendance portal.</span>
-            </div>
-        </div>
-    </section>
-
-    <section class="form-panel">
-        <div class="form-content">
-
-            <div class="mobile-brand">
-                <div class="brand-icon">A</div>
-                <div>
-                    <h3>Campus Attendance</h3>
-                    <p>STUDENT MONITORING SYSTEM</p>
-                </div>
+        <form method="POST" action="{{ url_for('register') }}">
+            <div class="form-group">
+                <label for="full_name">Full Name</label>
+                <input
+                    type="text"
+                    id="full_name"
+                    name="full_name"
+                    placeholder="Enter your full name"
+                    required
+                    autocomplete="name"
+                >
             </div>
 
-            <h2>Create account</h2>
-            <p class="subtitle">
-                Enter your details below to get started.
-            </p>
-
-            {% if message %}
-            <div class="message" role="alert">{{ message }}</div>
-            {% endif %}
-
-            <form method="POST" action="{{ url_for('register') }}">
-
-                <div class="field">
-                    <label for="username">Username</label>
-                    <input
-                        type="text"
-                        id="username"
-                        name="username"
-                        placeholder="Choose a username"
-                        autocomplete="username"
-                        maxlength="50"
-                        required>
-                </div>
-
-                <div class="field">
-                    <label for="password">Password</label>
-
-                    <div class="password-wrap">
-                        <input
-                            type="password"
-                            id="password"
-                            name="password"
-                            placeholder="Create a password"
-                            autocomplete="new-password"
-                            minlength="8"
-                            required>
-
-                        <button
-                            type="button"
-                            class="toggle-password"
-                            id="togglePassword"
-                            onclick="togglePasswordVisibility()">
-                            Show
-                        </button>
-                    </div>
-
-                    <span class="hint">Use at least 8 characters.</span>
-                </div>
-
-                <div class="field">
-                    <label for="role">Account type</label>
-                    <select id="role" name="role" required>
-                        <option value="student" selected>Student</option>
-                        <option value="teacher">Teacher</option>
-                    </select>
-                </div>
-
-                <div class="field" id="teacherCodeField" hidden>
-                    <label for="teacher_code">Teacher authorization code</label>
-                    <input
-                        type="password"
-                        id="teacher_code"
-                        name="teacher_code"
-                        placeholder="Enter teacher code"
-                        autocomplete="off">
-
-                    <span class="hint">
-                        Required to register a teacher account.
-                    </span>
-                </div>
-
-                <button type="submit" class="register-button">
-                    Create Account &nbsp; →
-                </button>
-            </form>
-
-            <div class="divider">ALREADY REGISTERED?</div>
-
-            <p class="login-text">
-                Already have an account?
-                <a href="{{ url_for('login') }}">Sign in</a>
-            </p>
-
-            <div class="security-note">
-                Campus Attendance Portal<br>
-                Keep your password private.
+            <div class="form-group">
+                <label for="username">Username</label>
+                <input
+                    type="text"
+                    id="username"
+                    name="username"
+                    placeholder="Choose a username"
+                    required
+                    autocomplete="username"
+                >
             </div>
-        </div>
-    </section>
 
-</div>
+            <div class="form-group">
+                <label for="email">Email Address</label>
+                <input
+                    type="email"
+                    id="email"
+                    name="email"
+                    placeholder="Enter your email"
+                    required
+                    autocomplete="email"
+                >
+            </div>
 
-<script>
-    function togglePasswordVisibility() {
-        const password = document.getElementById("password");
-        const button = document.getElementById("togglePassword");
+            <div class="form-group">
+                <label for="section">Section</label>
+                <input
+                    type="text"
+                    id="section"
+                    name="section"
+                    placeholder="Example: BSIT 1-2"
+                    required
+                >
+            </div>
 
-        if (password.type === "password") {
-            password.type = "text";
-            button.textContent = "Hide";
-        } else {
-            password.type = "password";
-            button.textContent = "Show";
-        }
-    }
+            <div class="form-group">
+                <label for="password">Password</label>
+                <input
+                    type="password"
+                    id="password"
+                    name="password"
+                    placeholder="Create a password"
+                    required
+                    minlength="8"
+                    autocomplete="new-password"
+                >
+                <small>Use at least 8 characters.</small>
+            </div>
 
-    const roleSelect = document.getElementById("role");
-    const teacherCodeField = document.getElementById("teacherCodeField");
-    const teacherCodeInput = document.getElementById("teacher_code");
+            <div class="form-group">
+                <label for="confirm_password">Confirm Password</label>
+                <input
+                    type="password"
+                    id="confirm_password"
+                    name="confirm_password"
+                    placeholder="Enter your password again"
+                    required
+                    minlength="8"
+                    autocomplete="new-password"
+                >
+            </div>
 
-    function updateTeacherCodeField() {
-        const isTeacher = roleSelect.value === "teacher";
+            <button type="submit" class="btn btn-primary auth-button">
+                Create Account
+            </button>
+        </form>
 
-        teacherCodeField.hidden = !isTeacher;
-        teacherCodeInput.required = isTeacher;
+        <p class="auth-footer">
+            Already have an account?
+            <a href="{{ url_for('login') }}">Log in here</a>
+        </p>
+    </div>
+</section>
 
-        if (!isTeacher) {
-            teacherCodeInput.value = "";
-        }
-    }
+<style>
+.auth-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 35px 15px;
+}
 
-    roleSelect.addEventListener("change", updateTeacherCodeField);
-    updateTeacherCodeField();
-</script>
+.auth-card {
+    width: 100%;
+    max-width: 480px;
+    background: white;
+    padding: 32px;
+    border-radius: 16px;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
+    border-top: 5px solid #800000;
+}
 
-</body>
-</html>
+.auth-header {
+    text-align: center;
+    margin-bottom: 28px;
+}
+
+.auth-logo {
+    width: 75px;
+    height: 75px;
+    object-fit: contain;
+    margin-bottom: 12px;
+}
+
+.auth-header h1 {
+    color: #800000;
+    margin: 0 0 8px;
+}
+
+.auth-header p {
+    color: #666;
+    margin: 0;
+}
+
+.form-group {
+    margin-bottom: 18px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 600;
+    color: #333;
+}
+
+.form-group input {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    font-size: 15px;
+    box-sizing: border-box;
+}
+
+.form-group input:focus {
+    outline: none;
+    border-color: #800000;
+    box-shadow: 0 0 0 3px rgba(128, 0, 0, 0.1);
+}
+
+.form-group small {
+    display: block;
+    margin-top: 6px;
+    color: #777;
+}
+
+.auth-button {
+    width: 100%;
+    margin-top: 5px;
+}
+
+.auth-footer {
+    text-align: center;
+    margin: 22px 0 0;
+    color: #666;
+}
+
+.auth-footer a {
+    color: #800000;
+    font-weight: bold;
+    text-decoration: none;
+}
+
+.auth-footer a:hover {
+    text-decoration: underline;
+}
+</style>
+{% endblock %}
+```

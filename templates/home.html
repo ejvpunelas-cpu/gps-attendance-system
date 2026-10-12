@@ -1,344 +1,288 @@
 
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Welcome | Campus Attendance</title>
+{% extends "base.html" %}
 
-    <style>
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
+{% block title %}Welcome | PUP Calauan Campus Classroom{% endblock %}
 
-        :root {
-            --maroon: #741d35;
-            --maroon-dark: #511226;
-            --gold: #e6b65c;
-            --background: #f6f5f7;
-            --text: #29252b;
-            --muted: #85808a;
-            --border: #e8e3e9;
-        }
+{% block content %}
 
-        body {
-            min-height: 100vh;
-            font-family: "Segoe UI", Arial, sans-serif;
-            background: var(--background);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 24px;
-        }
+<section class="hero">
+    <div class="hero-content">
+        <span class="eyebrow">PUP CALAUAN CAMPUS</span>
 
-        .page {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            width: 100%;
-            max-width: 960px;
-            min-height: 570px;
-            background: white;
-            border-radius: 22px;
-            overflow: hidden;
-            box-shadow: 0 15px 50px rgba(55, 20, 35, 0.12);
-        }
+        <h1>Welcome to<br>
+            <span>Campus Classroom</span>
+        </h1>
 
-        .welcome-panel {
-            position: relative;
-            overflow: hidden;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            padding: 42px;
-            color: white;
-            background: linear-gradient(145deg, #8b2944, #511226);
-        }
+        <p class="hero-description">
+            A smarter way to manage class schedules, monitor attendance,
+            and keep students and professors connected.
+        </p>
 
-        .welcome-panel::before {
-            content: "";
-            position: absolute;
-            width: 330px;
-            height: 330px;
-            right: -150px;
-            top: 110px;
-            border: 45px solid rgba(255,255,255,0.06);
-            border-radius: 50%;
-        }
-
-        .welcome-panel::after {
-            content: "";
-            position: absolute;
-            width: 190px;
-            height: 190px;
-            right: -65px;
-            top: 175px;
-            border: 1px solid rgba(230,182,92,0.35);
-            border-radius: 50%;
-        }
-
-        .brand {
-            position: relative;
-            z-index: 1;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
-        .brand-icon {
-            width: 46px;
-            height: 46px;
-            display: grid;
-            place-items: center;
-            border-radius: 12px;
-            background: var(--gold);
-            color: var(--maroon-dark);
-            font-size: 23px;
-            font-weight: bold;
-            flex-shrink: 0;
-        }
-
-        .brand h2 {
-            font-size: 16px;
-        }
-
-        .brand p {
-            margin-top: 5px;
-            font-size: 10px;
-            letter-spacing: 1px;
-            color: #e9d2d9;
-        }
-
-        .welcome-content {
-            position: relative;
-            z-index: 1;
-            margin: 45px 0;
-        }
-
-        .eyebrow {
-            color: var(--gold);
-            font-size: 11px;
-            font-weight: bold;
-            letter-spacing: 2px;
-            margin-bottom: 17px;
-        }
-
-        .welcome-content h1 {
-            max-width: 350px;
-            font-size: 37px;
-            line-height: 1.2;
-            margin-bottom: 20px;
-        }
-
-        .welcome-content p {
-            max-width: 330px;
-            color: #eadce0;
-            font-size: 14px;
-            line-height: 1.9;
-        }
-
-        .feature {
-            position: relative;
-            z-index: 1;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            padding: 16px;
-            background: rgba(255,255,255,0.08);
-            border: 1px solid rgba(255,255,255,0.1);
-            border-radius: 12px;
-        }
-
-        .feature-icon {
-            font-size: 24px;
-        }
-
-        .feature strong {
-            display: block;
-            font-size: 13px;
-            margin-bottom: 5px;
-        }
-
-        .feature span {
-            font-size: 11px;
-            color: #eadce0;
-            line-height: 1.5;
-        }
-
-        .form-panel {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 45px;
-        }
-
-        .form-content {
-            width: 100%;
-            max-width: 340px;
-        }
-
-        .form-content h2 {
-            font-size: 29px;
-            margin-bottom: 10px;
-            color: var(--text);
-        }
-
-        .subtitle {
-            color: var(--muted);
-            font-size: 13px;
-            line-height: 1.8;
-            margin-bottom: 30px;
-        }
-
-        .action-button {
-            display: block;
-            width: 100%;
-            padding: 15px;
-            margin-top: 14px;
-            border: 1px solid var(--maroon);
-            border-radius: 9px;
-            background: var(--maroon);
-            color: white;
-            text-decoration: none;
-            text-align: center;
-            font-size: 14px;
-            font-weight: bold;
-            transition: 0.2s;
-        }
-
-        .action-button:hover {
-            background: var(--maroon-dark);
-            transform: translateY(-1px);
-        }
-
-        .action-button.secondary {
-            background: white;
-            color: var(--maroon);
-        }
-
-        .action-button.secondary:hover {
-            background: #fbf3f5;
-        }
-
-        .divider {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            margin: 28px 0;
-            color: #aaa3ad;
-            font-size: 11px;
-        }
-
-        .divider::before,
-        .divider::after {
-            content: "";
-            flex: 1;
-            height: 1px;
-            background: var(--border);
-        }
-
-        .security-note {
-            margin-top: 35px;
-            text-align: center;
-            color: #99919c;
-            font-size: 11px;
-            line-height: 1.7;
-        }
-
-        @media (max-width: 700px) {
-            body {
-                padding: 15px;
-                align-items: flex-start;
-            }
-
-            .page {
-                display: block;
-                max-width: 430px;
-                min-height: auto;
-                margin: auto;
-                border-radius: 17px;
-            }
-
-            .welcome-panel {
-                padding: 25px;
-            }
-
-            .welcome-content {
-                margin: 35px 0;
-            }
-
-            .welcome-content h1 {
-                font-size: 29px;
-            }
-
-            .form-panel {
-                padding: 30px 24px;
-            }
-
-            .form-content h2 {
-                font-size: 26px;
-            }
-        }
-    </style>
-</head>
-
-<body>
-<div class="page">
-
-    <section class="welcome-panel">
-        <div class="brand">
-            <div class="brand-icon">A</div>
-            <div>
-                <h2>Campus Attendance</h2>
-                <p>STUDENT MONITORING SYSTEM</p>
-            </div>
-        </div>
-
-        <div class="welcome-content">
-            <div class="eyebrow">WELCOME TO YOUR CAMPUS PORTAL</div>
-            <h1>Your campus. Your attendance. All in one place.</h1>
-            <p>
-                Access your attendance portal and keep track of
-                your daily check-ins through a simple GPS-based system.
-            </p>
-        </div>
-
-        <div class="feature">
-            <div class="feature-icon">⌖</div>
-            <div>
-                <strong>Location-based attendance</strong>
-                <span>Check in when you're within the permitted campus area.</span>
-            </div>
-        </div>
-    </section>
-
-    <section class="form-panel">
-        <div class="form-content">
-            <h2>Get started</h2>
-            <p class="subtitle">
-                Welcome to the Campus Attendance Portal.
-                Sign in to continue or create an account to get started.
-            </p>
-
-            <a href="{{ url_for('login') }}" class="action-button">
-                Sign In &nbsp; →
+        <div class="hero-buttons">
+            <a class="button" href="{{ url_for('login') }}">
+                Log In to Your Account
             </a>
 
-            <a href="{{ url_for('register') }}"
-               class="action-button secondary">
+            <a class="button secondary" href="{{ url_for('register') }}">
                 Create an Account
             </a>
-
-            <div class="divider">CAMPUS ATTENDANCE</div>
-
-            <p class="security-note">
-                Student Attendance Monitoring System<br>
-                Access the portal using your own account.
-            </p>
         </div>
-    </section>
+    </div>
 
-</div>
-</body>
-</html>
+    <div class="hero-emblem">
+        <div class="emblem-circle">
+            <img
+                src="{{ url_for('static', filename='images/pup-logo.png') }}"
+                alt="PUP Calauan emblem"
+                onerror="this.style.display='none'; document.getElementById('fallbackEmblem').style.display='flex';"
+            >
+
+            <div id="fallbackEmblem" class="fallback-emblem">
+                <span>PUP</span>
+                <small>CALAUAN</small>
+            </div>
+        </div>
+
+        <p class="emblem-caption">
+            Learn. Track. Achieve.
+        </p>
+    </div>
+</section>
+
+<section class="features">
+    <div class="section-heading">
+        <span class="eyebrow">YOUR CAMPUS, CONNECTED</span>
+        <h2>Everything in one place</h2>
+        <p class="muted">
+            Simple tools for everyday classroom management.
+        </p>
+    </div>
+
+    <div class="feature-grid">
+        <article class="feature-card">
+            <div class="feature-icon">📅</div>
+            <h3>Class Schedules</h3>
+            <p>
+                View class schedules organized by section, subject,
+                room, and time.
+            </p>
+        </article>
+
+        <article class="feature-card">
+            <div class="feature-icon">✓</div>
+            <h3>Attendance Tracking</h3>
+            <p>
+                Record check-ins and review present, late, and absent
+                attendance statuses.
+            </p>
+        </article>
+
+        <article class="feature-card">
+            <div class="feature-icon">📍</div>
+            <h3>Campus Monitoring</h3>
+            <p>
+                Location-based attendance tools help flag possible
+                campus departures during class.
+            </p>
+        </article>
+    </div>
+</section>
+
+<style>
+    .hero {
+        display: grid;
+        grid-template-columns: 1.3fr 0.7fr;
+        align-items: center;
+        gap: 40px;
+        background: linear-gradient(135deg, #800000, #570000);
+        color: white;
+        padding: 55px 45px;
+        border-radius: 18px;
+        border-bottom: 6px solid #d4a72c;
+        overflow: hidden;
+    }
+
+    .eyebrow {
+        display: inline-block;
+        color: #d4a72c;
+        font-size: 12px;
+        font-weight: 700;
+        letter-spacing: 2px;
+        margin-bottom: 14px;
+    }
+
+    .hero h1 {
+        font-size: clamp(32px, 4vw, 48px);
+        line-height: 1.15;
+        margin-bottom: 18px;
+    }
+
+    .hero h1 span {
+        color: #f2cf70;
+    }
+
+    .hero-description {
+        max-width: 540px;
+        color: #f4e7e7;
+        font-size: 16px;
+        margin-bottom: 28px;
+    }
+
+    .hero-buttons {
+        display: flex;
+        gap: 12px;
+        flex-wrap: wrap;
+    }
+
+    .hero .button {
+        background: #d4a72c;
+        color: #4b0000;
+        font-weight: 700;
+    }
+
+    .hero .button:hover {
+        background: #f2cf70;
+    }
+
+    .hero .button.secondary {
+        background: transparent;
+        border: 1px solid #f2cf70;
+        color: white;
+    }
+
+    .hero-emblem {
+        text-align: center;
+    }
+
+    .emblem-circle {
+        width: 210px;
+        height: 210px;
+        border: 5px solid #d4a72c;
+        background: white;
+        border-radius: 50%;
+        margin: 0 auto;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 15px;
+        box-shadow: 0 10px 35px rgba(0, 0, 0, 0.25);
+    }
+
+    .emblem-circle img {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+    }
+
+    .fallback-emblem {
+        display: none;
+        width: 100%;
+        height: 100%;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        color: #800000;
+        border: 2px solid #d4a72c;
+        border-radius: 50%;
+    }
+
+    .fallback-emblem span {
+        font-size: 35px;
+        font-weight: 800;
+    }
+
+    .fallback-emblem small {
+        color: #800000;
+        letter-spacing: 3px;
+        font-weight: 700;
+    }
+
+    .emblem-caption {
+        color: #f2cf70;
+        font-weight: 500;
+        letter-spacing: 1px;
+        margin-top: 20px;
+    }
+
+    .features {
+        padding: 48px 0 20px;
+    }
+
+    .section-heading {
+        text-align: center;
+        margin-bottom: 28px;
+    }
+
+    .section-heading .eyebrow {
+        color: #800000;
+    }
+
+    .section-heading h2 {
+        font-size: 29px;
+        margin: 0 0 8px;
+    }
+
+    .feature-grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 18px;
+    }
+
+    .feature-card {
+        background: white;
+        border: 1px solid #e4dadd;
+        border-top: 4px solid #d4a72c;
+        border-radius: 13px;
+        padding: 24px;
+    }
+
+    .feature-icon {
+        width: 45px;
+        height: 45px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 12px;
+        background: #f6e9eb;
+        color: #800000;
+        font-size: 23px;
+        font-weight: 700;
+    }
+
+    .feature-card h3 {
+        margin-bottom: 8px;
+    }
+
+    .feature-card p {
+        color: #71696b;
+        margin-bottom: 0;
+    }
+
+    @media (max-width: 750px) {
+        .hero {
+            grid-template-columns: 1fr;
+            padding: 35px 23px;
+            text-align: center;
+        }
+
+        .hero-description {
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .hero-buttons {
+            justify-content: center;
+        }
+
+        .emblem-circle {
+            width: 155px;
+            height: 155px;
+        }
+
+        .feature-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+
+{% endblock %}

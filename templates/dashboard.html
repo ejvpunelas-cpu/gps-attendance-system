@@ -1,841 +1,423 @@
-
+```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard | Campus Attendance</title>
+    <title>Dashboard | PUP Attendance</title>
 
     <style>
         * {
             box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
-
-        :root {
-            --maroon: #741d35;
-            --maroon-dark: #511226;
-            --gold: #e6b65c;
-            --background: #f6f5f7;
-            --text: #29252b;
-            --muted: #85808a;
-            --border: #ece8ed;
-            --white: #ffffff;
         }
 
         body {
-            font-family: "Segoe UI", Arial, sans-serif;
-            background: var(--background);
-            color: var(--text);
-            min-height: 100vh;
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #f5f3f4;
+            color: #30272a;
         }
 
-        .layout {
-            display: flex;
-            min-height: 100vh;
-        }
-
-        /* SIDEBAR */
-
-        .sidebar {
-            width: 250px;
-            background: var(--maroon-dark);
+        header {
+            background: #800000;
             color: white;
-            padding: 28px 18px;
+            padding: 18px 6%;
             display: flex;
-            flex-direction: column;
-            flex-shrink: 0;
+            justify-content: space-between;
+            align-items: center;
+            gap: 15px;
+            flex-wrap: wrap;
         }
 
         .brand {
             display: flex;
             align-items: center;
             gap: 12px;
-            padding: 0 8px 35px;
-            border-bottom: 1px solid rgba(255,255,255,0.15);
         }
 
-        .brand-icon {
-            width: 45px;
-            height: 45px;
-            display: grid;
-            place-items: center;
-            background: var(--gold);
-            color: var(--maroon-dark);
-            border-radius: 12px;
-            font-size: 23px;
-            font-weight: bold;
+        .brand img {
+            width: 48px;
+            height: 48px;
+            object-fit: contain;
+            background: white;
+            border-radius: 50%;
+            padding: 4px;
         }
 
         .brand h2 {
-            font-size: 16px;
-            line-height: 1.4;
+            margin: 0;
+            font-size: 19px;
         }
 
         .brand p {
-            color: #e4cbd2;
-            font-size: 11px;
-            margin-top: 3px;
-        }
-
-        .nav-label {
-            color: #d2adb8;
-            font-size: 11px;
-            font-weight: bold;
-            letter-spacing: 1.5px;
-            margin: 30px 12px 12px;
-        }
-
-        .nav-item {
-            display: flex;
-            align-items: center;
-            gap: 13px;
-            color: #f2e8ec;
-            padding: 13px 14px;
-            border-radius: 9px;
-            text-decoration: none;
-            font-size: 14px;
-            margin-bottom: 7px;
-        }
-
-        .nav-item.active {
-            background: var(--maroon);
-            color: white;
-            border-left: 3px solid var(--gold);
-        }
-
-        .nav-icon {
-            font-size: 18px;
-            width: 22px;
-            text-align: center;
-        }
-
-        .sidebar-bottom {
-            margin-top: auto;
-            padding-top: 25px;
-        }
-
-        .sidebar-note {
-            color: #e4cbd2;
+            margin: 4px 0 0;
             font-size: 12px;
-            line-height: 1.6;
-            padding: 15px 12px;
-            background: rgba(255,255,255,0.06);
-            border-radius: 10px;
-            margin-bottom: 15px;
+            color: #f3d9a0;
+        }
+
+        a {
+            color: inherit;
         }
 
         .logout {
-            display: block;
-            padding: 12px 14px;
             color: white;
             text-decoration: none;
-            border: 1px solid rgba(255,255,255,0.2);
-            border-radius: 9px;
-            font-size: 14px;
+            border: 1px solid #f3d9a0;
+            padding: 9px 15px;
+            border-radius: 8px;
         }
 
-        .logout:hover {
-            background: rgba(255,255,255,0.1);
+        main {
+            width: 90%;
+            max-width: 1100px;
+            margin: 30px auto;
         }
-
-        /* MAIN CONTENT */
-
-        .main {
-            flex: 1;
-            min-width: 0;
-            padding: 30px 38px;
-        }
-
-        .topbar {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            gap: 15px;
-            margin-bottom: 32px;
-        }
-
-        .eyebrow {
-            color: var(--maroon);
-            font-size: 12px;
-            font-weight: bold;
-            letter-spacing: 1.3px;
-            text-transform: uppercase;
-            margin-bottom: 8px;
-        }
-
-        .topbar h1 {
-            font-size: 29px;
-            letter-spacing: -0.7px;
-        }
-
-        .topbar p {
-            color: var(--muted);
-            font-size: 14px;
-            margin-top: 7px;
-        }
-
-        .profile {
-            display: flex;
-            align-items: center;
-            gap: 11px;
-            padding: 9px 14px;
-            background: white;
-            border: 1px solid var(--border);
-            border-radius: 12px;
-        }
-
-        .avatar {
-            width: 40px;
-            height: 40px;
-            display: grid;
-            place-items: center;
-            border-radius: 50%;
-            background: #f4e5e9;
-            color: var(--maroon);
-            font-weight: bold;
-            font-size: 17px;
-        }
-
-        .profile-name {
-            font-size: 13px;
-            font-weight: bold;
-        }
-
-        .profile-role {
-            color: var(--muted);
-            font-size: 11px;
-            margin-top: 4px;
-        }
-
-        /* WELCOME BANNER */
 
         .welcome {
-            position: relative;
-            overflow: hidden;
-            background: linear-gradient(120deg, #741d35, #91324b);
-            color: white;
-            padding: 30px;
-            border-radius: 17px;
+            background: white;
+            padding: 25px;
+            border-radius: 14px;
+            border-left: 6px solid #d4af37;
             margin-bottom: 25px;
+            box-shadow: 0 3px 12px #0000000a;
         }
 
-        .welcome::after {
-            content: "";
-            position: absolute;
-            width: 220px;
-            height: 220px;
-            right: -55px;
-            top: -90px;
-            border: 35px solid rgba(255,255,255,0.06);
-            border-radius: 50%;
+        .welcome h1 {
+            margin-top: 0;
+            color: #800000;
         }
 
-        .welcome-label {
-            color: #f0d6a1;
-            font-size: 12px;
-            font-weight: bold;
-            letter-spacing: 1.5px;
-            text-transform: uppercase;
-            margin-bottom: 12px;
+        .section {
+            background: white;
+            border-radius: 14px;
+            padding: 24px;
+            margin-bottom: 25px;
+            box-shadow: 0 3px 12px #0000000a;
         }
 
-        .welcome h2 {
-            font-size: 25px;
-            margin-bottom: 10px;
+        .section h2 {
+            color: #800000;
+            margin-top: 0;
         }
 
-        .welcome p {
-            color: #f0dce1;
-            font-size: 14px;
-            line-height: 1.7;
-            max-width: 500px;
-        }
-
-        /* CARDS */
-
-        .section-heading {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            gap: 10px;
-            margin: 30px 0 16px;
-        }
-
-        .section-heading h2 {
-            font-size: 18px;
-        }
-
-        .section-heading p {
-            color: var(--muted);
-            font-size: 12px;
-        }
-
-        .cards {
+        .form-grid {
             display: grid;
-            grid-template-columns: repeat(2, minmax(0, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 14px;
+        }
+
+        input, textarea, select {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #d8ced0;
+            border-radius: 8px;
+            font: inherit;
+            margin: 5px 0 12px;
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 90px;
+        }
+
+        button, .button {
+            background: #800000;
+            color: white;
+            padding: 11px 17px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+            font: inherit;
+        }
+
+        button:hover, .button:hover {
+            background: #600000;
+        }
+
+        .class-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
             gap: 18px;
         }
 
-        .card {
-            background: white;
-            border: 1px solid var(--border);
-            border-radius: 14px;
-            padding: 23px;
-            min-width: 0;
+        .class-card {
+            border: 1px solid #eadfe1;
+            border-top: 5px solid #800000;
+            border-radius: 12px;
+            padding: 20px;
         }
 
-        .card-heading {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            margin-bottom: 20px;
+        .class-card h3 {
+            margin-top: 0;
+            color: #800000;
         }
 
-        .card-icon {
-            width: 43px;
-            height: 43px;
-            display: grid;
-            place-items: center;
-            background: #f6e9ed;
-            color: var(--maroon);
-            border-radius: 11px;
-            font-size: 21px;
-            flex-shrink: 0;
-        }
-
-        .card-heading h3 {
-            font-size: 15px;
-        }
-
-        .card-heading p {
-            color: var(--muted);
-            font-size: 12px;
-            margin-top: 4px;
-        }
-
-        .status-pill {
-            display: inline-block;
-            background: #e6f6ed;
-            color: #187747;
-            border-radius: 20px;
-            padding: 7px 11px;
-            font-size: 12px;
-            font-weight: bold;
-            margin-bottom: 15px;
-        }
-
-        .not-checked {
-            background: #fff3df;
-            color: #99630d;
-        }
-
-        .status-title {
-            font-size: 23px;
-            font-weight: bold;
-            margin-bottom: 9px;
-        }
-
-        .card-description {
-            color: var(--muted);
-            font-size: 13px;
-            line-height: 1.7;
-            margin-bottom: 20px;
-        }
-
-        .details {
-            padding-top: 15px;
-            border-top: 1px solid var(--border);
-        }
-
-        .detail-row {
-            display: flex;
-            justify-content: space-between;
-            gap: 12px;
-            padding: 8px 0;
-            font-size: 13px;
-        }
-
-        .detail-row span:first-child {
-            color: var(--muted);
-        }
-
-        .detail-row span:last-child {
-            text-align: right;
-            font-weight: 600;
-            overflow-wrap: anywhere;
-        }
-
-        .button {
-            display: block;
-            width: 100%;
-            border: none;
-            background: var(--maroon);
-            color: white;
-            padding: 14px 18px;
-            border-radius: 9px;
+        .muted {
+            color: #74686b;
             font-size: 14px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: background 0.2s, transform 0.2s;
         }
 
-        .button:hover {
-            background: var(--maroon-dark);
-            transform: translateY(-1px);
+        .flash {
+            padding: 13px 16px;
+            margin-bottom: 12px;
+            border-radius: 8px;
+            background: #fff0d0;
+            color: #694700;
         }
 
-        .button:disabled {
-            background: #9b7c85;
-            cursor: wait;
-            transform: none;
+        .flash.error {
+            background: #ffe5e5;
+            color: #8a0000;
         }
 
-        .gps-message {
-            margin-top: 14px;
-            padding: 12px;
-            background: #f8f6f8;
-            border: 1px solid var(--border);
-            border-radius: 9px;
-            color: #665b65;
-            font-size: 12px;
-            line-height: 1.7;
-            white-space: pre-line;
-            overflow-wrap: anywhere;
+        .flash.success {
+            background: #e3f7e8;
+            color: #17652a;
         }
 
-        .gps-message:empty {
-            display: none;
-        }
-
-        .server-message {
-            padding: 15px 18px;
-            margin-bottom: 22px;
-            background: white;
-            border: 1px solid #e4c37d;
-            border-left: 4px solid var(--gold);
-            border-radius: 10px;
+        .status {
+            display: inline-block;
+            background: #f4e6b7;
+            color: #674d00;
+            border-radius: 20px;
+            padding: 5px 10px;
             font-size: 13px;
-            line-height: 1.7;
-            overflow-wrap: anywhere;
         }
 
-        .server-message strong {
-            display: block;
-            color: var(--maroon);
-            margin-bottom: 4px;
-        }
-
-        .campus-card {
-            margin-top: 20px;
-            display: flex;
-            align-items: flex-start;
-            gap: 15px;
-        }
-
-        .campus-card .card-icon {
-            background: #fff3df;
-            color: #99630d;
-        }
-
-        .campus-card h3 {
-            font-size: 15px;
-            margin-bottom: 8px;
-        }
-
-        .campus-card p {
-            color: var(--muted);
-            font-size: 13px;
-            line-height: 1.7;
-        }
-
-        .footer {
+        footer {
             text-align: center;
-            padding: 28px 10px 8px;
-            color: var(--muted);
-            font-size: 11px;
-        }
-
-        /* MOBILE LAYOUT */
-
-        @media (max-width: 850px) {
-            .sidebar {
-                width: 205px;
-            }
-
-            .main {
-                padding: 25px 22px;
-            }
-
-            .cards {
-                grid-template-columns: 1fr;
-            }
+            color: #74686b;
+            padding: 25px;
+            font-size: 13px;
         }
 
         @media (max-width: 600px) {
-            .layout {
-                display: block;
+            header {
+                padding: 15px 5%;
             }
 
-            .sidebar {
-                width: 100%;
-                padding: 15px 16px;
+            main {
+                width: 92%;
+                margin-top: 20px;
             }
 
-            .brand {
-                padding: 0 2px 13px;
-                border-bottom: none;
-            }
-
-            .brand-icon {
-                width: 39px;
-                height: 39px;
-            }
-
-            .nav-label,
-            .sidebar-bottom,
-            .nav-item:not(.active) {
-                display: none;
-            }
-
-            .nav-item.active {
-                margin: 12px 0 0;
-                padding: 10px 12px;
-            }
-
-            .main {
-                padding: 23px 16px;
-            }
-
-            .topbar {
-                align-items: flex-start;
-            }
-
-            .topbar h1 {
-                font-size: 23px;
-            }
-
-            .profile {
-                padding: 7px;
-            }
-
-            .profile-info {
-                display: none;
-            }
-
-            .welcome {
-                padding: 24px 20px;
-            }
-
-            .welcome h2 {
-                font-size: 22px;
-            }
-
-            .card {
-                padding: 19px;
-            }
-
-            .section-heading {
-                align-items: flex-start;
-                flex-direction: column;
+            .section, .welcome {
+                padding: 18px;
             }
         }
     </style>
 </head>
 
 <body>
-<div class="layout">
 
-    <aside class="sidebar">
-        <div class="brand">
-            <div class="brand-icon">A</div>
-            <div>
-                <h2>Campus Attendance</h2>
-                <p>STUDENT MONITORING SYSTEM</p>
-            </div>
+<header>
+    <div class="brand">
+        <img
+            src="https://upload.wikimedia.org/wikipedia/en/thumb/2/2e/Polytechnic_University_of_the_Philippines.svg/240px-Polytechnic_University_of_the_Philippines.svg.png"
+            alt="PUP logo"
+            onerror="this.style.display='none'"
+        >
+
+        <div>
+            <h2>PUP Attendance</h2>
+            <p>CLASSROOM AND GPS MONITORING SYSTEM</p>
         </div>
+    </div>
 
-        <p class="nav-label">MAIN MENU</p>
+    <a href="{{ url_for('logout') }}" class="logout">Log Out</a>
+</header>
 
-        <a href="{{ url_for('dashboard') }}" class="nav-item active">
-            <span class="nav-icon">⌂</span>
-            Dashboard
-        </a>
+<main>
 
-        {% if role == "student" %}
-        <a href="#attendance" class="nav-item">
-            <span class="nav-icon">▣</span>
-            My Attendance
-        </a>
+    <div class="welcome">
+        <h1>Welcome, {{ username }}!</h1>
+        <p>
+            {% if role == "teacher" %}
+                Manage your classes, schedules, announcements, and attendance.
+            {% else %}
+                View your classes, check schedules, and record your attendance.
+            {% endif %}
+        </p>
+
+        <span class="status">
+            {{ role|capitalize }} Account
+        </span>
+    </div>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="flash {{ category }}">{{ message }}</div>
+            {% endfor %}
         {% endif %}
+    {% endwith %}
 
-        <div class="sidebar-bottom">
-            <div class="sidebar-note">
-                <strong>GPS Security</strong><br>
-                Your location is checked when you request attendance.
-            </div>
+    {% if message %}
+        <div class="flash">{{ message }}</div>
+    {% endif %}
 
-            <a href="{{ url_for('logout') }}" class="logout">
-                ↪ &nbsp; Log Out
-            </a>
-        </div>
-    </aside>
+    {% if role == "teacher" %}
 
-    <main class="main">
+        <section class="section">
+            <h2>Create a Class</h2>
 
-        <header class="topbar">
-            <div>
-                <div class="eyebrow">Attendance Portal</div>
-                <h1>Dashboard</h1>
-                <p>Manage and review your attendance.</p>
-            </div>
+            <form action="{{ url_for('create_class') }}" method="POST">
+                <label>Class Name</label>
+                <input
+                    type="text"
+                    name="name"
+                    placeholder="Example: BSIT 1-1"
+                    maxlength="120"
+                    required
+                >
 
-            <div class="profile">
-                <div class="avatar">
-                    {{ username[0]|upper }}
+                <label>Subject</label>
+                <input
+                    type="text"
+                    name="subject"
+                    placeholder="Example: Introduction to Computing"
+                    maxlength="120"
+                >
+
+                <label>Description</label>
+                <textarea
+                    name="description"
+                    placeholder="Enter class details..."
+                ></textarea>
+
+                <button type="submit">Create Class</button>
+            </form>
+        </section>
+
+    {% else %}
+
+        <section class="section">
+            <h2>Join a Class</h2>
+
+            <form action="{{ url_for('join_class') }}" method="POST">
+                <label>Class Code</label>
+                <input
+                    type="text"
+                    name="join_code"
+                    placeholder="Enter your teacher's class code"
+                    maxlength="12"
+                    required
+                >
+
+                <button type="submit">Join Class</button>
+            </form>
+        </section>
+
+        <section class="section">
+            <h2>Today's Attendance</h2>
+
+            {% if today_records %}
+                <div class="class-grid">
+                    {% for record in today_records %}
+                        <div class="class-card">
+                            <h3>{{ record.session.classroom.name }}</h3>
+                            <p>
+                                Subject:
+                                {{ record.session.classroom.subject or "Not specified" }}
+                            </p>
+                            <p>
+                                Status:
+                                <span class="status">{{ record.status }}</span>
+                            </p>
+
+                            {% if record.check_in_time %}
+                                <p>
+                                    Check-in:
+                                    {{ record.check_in_time.strftime("%I:%M %p") }}
+                                </p>
+                            {% endif %}
+
+                            {% if record.check_out_time %}
+                                <p>
+                                    Check-out:
+                                    {{ record.check_out_time.strftime("%I:%M %p") }}
+                                </p>
+                            {% endif %}
+
+                            <a
+                                class="button"
+                                href="{{ url_for('class_detail', class_id=record.session.classroom_id) }}"
+                            >
+                                Open Class
+                            </a>
+                        </div>
+                    {% endfor %}
                 </div>
-                <div class="profile-info">
-                    <div class="profile-name">{{ username }}</div>
-                    <div class="profile-role">{{ role|capitalize }} Account</div>
-                </div>
+            {% else %}
+                <p class="muted">No attendance sessions recorded for today yet.</p>
+            {% endif %}
+        </section>
+
+    {% endif %}
+
+    <section class="section">
+        <h2>
+            {% if role == "teacher" %}
+                My Classes
+            {% else %}
+                My Enrolled Classes
+            {% endif %}
+        </h2>
+
+        {% if classrooms %}
+            <div class="class-grid">
+                {% for classroom in classrooms %}
+                    <div class="class-card">
+                        <h3>{{ classroom.name }}</h3>
+
+                        <p>
+                            <strong>Subject:</strong>
+                            {{ classroom.subject or "Not specified" }}
+                        </p>
+
+                        {% if classroom.description %}
+                            <p>{{ classroom.description }}</p>
+                        {% endif %}
+
+                        {% if role == "teacher" %}
+                            <p>
+                                <strong>Join Code:</strong>
+                                <span class="status">{{ classroom.join_code }}</span>
+                            </p>
+                        {% else %}
+                            <p class="muted">
+                                Teacher: {{ classroom.teacher.username }}
+                            </p>
+                        {% endif %}
+
+                        <a
+                            class="button"
+                            href="{{ url_for('class_detail', class_id=classroom.id) }}"
+                        >
+                            Open Class
+                        </a>
+                    </div>
+                {% endfor %}
             </div>
-        </header>
-
-        {% if message %}
-        <div class="server-message" role="status">
-            <strong>Attendance Update</strong>
-            {{ message }}
-        </div>
-        {% endif %}
-
-        <section class="welcome">
-            <div class="welcome-label">YOUR CAMPUS PORTAL</div>
-            <h2>Hello, {{ username }}!</h2>
-            <p>
-                {% if role == "student" %}
-                Keep track of your daily attendance. When you're on campus,
-                use GPS check-in to submit your attendance.
+        {% else %}
+            <p class="muted">
+                {% if role == "teacher" %}
+                    You haven't created a class yet. Use the form above to get started.
                 {% else %}
-                Welcome to the teacher portal. Your dashboard is ready.
+                    You haven't joined a class yet. Ask your teacher for a class code.
                 {% endif %}
             </p>
-        </section>
-
-        {% if role == "student" %}
-
-        <div class="section-heading" id="attendance">
-            <h2>Your Attendance</h2>
-            <p>Today's attendance record</p>
-        </div>
-
-        <div class="cards">
-
-            <section class="card">
-                <div class="card-heading">
-                    <div class="card-icon">▣</div>
-                    <div>
-                        <h3>Daily Attendance</h3>
-                        <p>Your check-in status</p>
-                    </div>
-                </div>
-
-                {% if attendance %}
-                    <span class="status-pill">✓ CHECKED IN</span>
-                    <div class="status-title">You're recorded!</div>
-                    <p class="card-description">
-                        Your attendance record for today has been saved.
-                    </p>
-
-                    <div class="details">
-                        <div class="detail-row">
-                            <span>Date</span>
-                            <span>{{ attendance.attendance_date }}</span>
-                        </div>
-                        <div class="detail-row">
-                            <span>Time</span>
-                            <span>{{ attendance.check_in_time.strftime('%I:%M %p') }}</span>
-                        </div>
-                        <div class="detail-row">
-                            <span>Verification</span>
-                            <span>{{ attendance.status }}</span>
-                        </div>
-                    </div>
-                {% else %}
-                    <span class="status-pill not-checked">● NOT CHECKED IN</span>
-                    <div class="status-title">Not yet recorded</div>
-                    <p class="card-description">
-                        Your attendance hasn't been recorded today.
-                        Check in when you're within the permitted campus area.
-                    </p>
-
-                    <form id="checkInForm"
-                          method="POST"
-                          action="{{ url_for('check_in') }}">
-
-                        <input type="hidden" name="latitude" id="latitude">
-                        <input type="hidden" name="longitude" id="longitude">
-                        <input type="hidden" name="accuracy" id="accuracy">
-
-                        <button class="button"
-                                id="checkInButton"
-                                type="button"
-                                onclick="getLocation()">
-                            ⌖ &nbsp; Check In Using GPS
-                        </button>
-
-                        <p id="gpsMessage" class="gps-message" aria-live="polite"></p>
-                    </form>
-                {% endif %}
-            </section>
-
-            <section class="card">
-                <div class="card-heading">
-                    <div class="card-icon">⌖</div>
-                    <div>
-                        <h3>Location Verification</h3>
-                        <p>GPS attendance requirements</p>
-                    </div>
-                </div>
-
-                <div class="status-title">GPS Enabled</div>
-                <p class="card-description">
-                    Your device's location is checked when you submit a
-                    check-in request. Attendance is saved only if the
-                    configured location checks pass.
-                </p>
-
-                <div class="details">
-                    <div class="detail-row">
-                        <span>Allowed radius</span>
-                        <span>100 meters</span>
-                    </div>
-                    <div class="detail-row">
-                        <span>GPS accuracy limit</span>
-                        <span>50 meters</span>
-                    </div>
-                    <div class="detail-row">
-                        <span>Location access</span>
-                        <span>When checking in</span>
-                    </div>
-                </div>
-            </section>
-
-        </div>
-
-        {% elif role == "teacher" %}
-
-        <div class="section-heading">
-            <h2>Teacher Overview</h2>
-            <p>Account information</p>
-        </div>
-
-        <section class="card">
-            <div class="card-heading">
-                <div class="card-icon">♙</div>
-                <div>
-                    <h3>Teacher Account</h3>
-                    <p>You're signed in successfully</p>
-                </div>
-            </div>
-
-            <div class="status-title">Welcome, {{ username }}</div>
-            <p class="card-description">
-                Your teacher dashboard is ready. Attendance management
-                features can be added here.
-            </p>
-        </section>
-
         {% endif %}
+    </section>
 
-        <section class="card campus-card">
-            <div class="card-icon">⌖</div>
-            <div>
-                <h3>Campus Location</h3>
-                <p>
-                    The campus coordinates are currently configured in
-                    the application. They should be verified against the
-                    actual campus grounds before the system is used for
-                    official attendance.
-                </p>
-            </div>
-        </section>
+</main>
 
-        <footer class="footer">
-            Campus Attendance System · Student Attendance Portal
-        </footer>
-
-    </main>
-</div>
-
-<script>
-    function getLocation() {
-        const message = document.getElementById("gpsMessage");
-        const button = document.getElementById("checkInButton");
-        const form = document.getElementById("checkInForm");
-
-        if (!message || !button || !form) {
-            return;
-        }
-
-        if (!navigator.geolocation) {
-            message.textContent =
-                "Your browser does not support GPS location.";
-            return;
-        }
-
-        button.disabled = true;
-        button.textContent = "Getting GPS Location...";
-        message.textContent =
-            "Waiting for your phone's location. Please wait...";
-
-        navigator.geolocation.getCurrentPosition(
-            function(position) {
-                document.getElementById("latitude").value =
-                    position.coords.latitude;
-
-                document.getElementById("longitude").value =
-                    position.coords.longitude;
-
-                document.getElementById("accuracy").value =
-                    position.coords.accuracy;
-
-                message.textContent =
-                    "GPS received!\n" +
-                    "Accuracy: " +
-                    Math.round(position.coords.accuracy) +
-                    " meters.\nSending your check-in...";
-
-                form.submit();
-            },
-
-            function(error) {
-                button.disabled = false;
-                button.textContent = "⌖  Check In Using GPS";
-
-                if (error.code === 1) {
-                    message.textContent =
-                        "Location permission denied. Allow location access in your browser.";
-                } else if (error.code === 2) {
-                    message.textContent =
-                        "Location unavailable. Check your phone's location settings.";
-                } else if (error.code === 3) {
-                    message.textContent =
-                        "GPS request timed out. Please try again.";
-                } else {
-                    message.textContent =
-                        "GPS error: " + error.message;
-                }
-            },
-
-            {
-                enableHighAccuracy: true,
-                timeout: 20000,
-                maximumAge: 0
-            }
-        );
-    }
-</script>
+<footer>
+    PUP Attendance System · GPS-assisted class monitoring
+</footer>
 
 </body>
 </html>
+```

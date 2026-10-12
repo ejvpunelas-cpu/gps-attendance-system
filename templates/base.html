@@ -1,0 +1,370 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>{% block title %}PUP Calauan | Campus Classroom{% endblock %}</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;600;700&family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --maroon: #800000;
+            --maroon-dark: #570000;
+            --maroon-light: #f6e9eb;
+            --gold: #d4a72c;
+            --gold-light: #fff5d6;
+            --background: #f7f5f2;
+            --surface: #ffffff;
+            --text: #282323;
+            --muted: #71696b;
+            --border: #e4dadd;
+            --green: #188038;
+            --red: #c5221f;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            background: var(--background);
+            color: var(--text);
+            font-family: Roboto, Arial, sans-serif;
+        }
+
+        header {
+            min-height: 76px;
+            background: var(--maroon);
+            border-bottom: 4px solid var(--gold);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 20px;
+            padding: 12px 28px;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: white;
+            text-decoration: none;
+            font-family: "Google Sans", Arial, sans-serif;
+            font-size: 19px;
+            font-weight: 700;
+        }
+
+        .brand-logo {
+            width: 48px;
+            height: 48px;
+            object-fit: contain;
+            background: white;
+            border-radius: 50%;
+            padding: 3px;
+        }
+
+        .brand-text small {
+            display: block;
+            color: #f3d88b;
+            font-size: 11px;
+            font-weight: 500;
+            letter-spacing: 1px;
+            margin-top: 4px;
+        }
+
+        nav {
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 7px;
+        }
+
+        nav a {
+            text-decoration: none;
+            color: white;
+            padding: 10px 13px;
+            border-radius: 24px;
+            font-size: 14px;
+        }
+
+        nav a:hover {
+            background: rgba(255, 255, 255, 0.15);
+            color: #ffe39a;
+        }
+
+        main {
+            width: min(1200px, 100%);
+            margin: 0 auto;
+            padding: 30px 24px 60px;
+            min-height: 75vh;
+        }
+
+        h1, h2, h3 {
+            font-family: "Google Sans", Arial, sans-serif;
+        }
+
+        h1 {
+            font-size: 30px;
+            font-weight: 600;
+            margin-top: 0;
+        }
+
+        h2 {
+            font-size: 21px;
+            font-weight: 600;
+        }
+
+        p {
+            line-height: 1.6;
+        }
+
+        a {
+            color: var(--maroon);
+        }
+
+        .muted {
+            color: var(--muted);
+        }
+
+        .card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-top: 3px solid var(--gold);
+            border-radius: 12px;
+            padding: 22px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 6px rgba(70, 0, 0, 0.04);
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 18px;
+        }
+
+        .button, button {
+            display: inline-block;
+            border: none;
+            border-radius: 8px;
+            padding: 11px 19px;
+            background: var(--maroon);
+            color: white;
+            text-decoration: none;
+            font: inherit;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background 0.2s ease;
+        }
+
+        .button:hover, button:hover {
+            background: var(--maroon-dark);
+            color: white;
+        }
+
+        .button.secondary, button.secondary {
+            background: var(--gold-light);
+            color: var(--maroon);
+            border: 1px solid var(--gold);
+        }
+
+        .button.danger, button.danger {
+            background: #b3261e;
+            color: white;
+        }
+
+        input, select, textarea {
+            display: block;
+            width: 100%;
+            padding: 12px;
+            margin: 7px 0 16px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            background: white;
+            font: inherit;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            outline: 2px solid var(--gold);
+            border-color: var(--maroon);
+        }
+
+        label {
+            display: block;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .flash {
+            padding: 13px 16px;
+            border-radius: 8px;
+            margin-bottom: 16px;
+            background: var(--maroon-light);
+            border-left: 4px solid var(--maroon);
+            color: var(--maroon-dark);
+        }
+
+        .flash.error {
+            background: #fce8e6;
+            color: #b3261e;
+            border-left-color: #b3261e;
+        }
+
+        .flash.success {
+            background: #e6f4ea;
+            color: #137333;
+            border-left-color: #137333;
+        }
+
+        .status {
+            display: inline-block;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            background: #e8eaed;
+            color: #3c4043;
+        }
+
+        .status.present {
+            background: #e6f4ea;
+            color: #137333;
+        }
+
+        .status.late {
+            background: var(--gold-light);
+            color: #805b00;
+        }
+
+        .status.absent {
+            background: #fce8e6;
+            color: #b3261e;
+        }
+
+        .table-wrap {
+            width: 100%;
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+        }
+
+        th, td {
+            padding: 13px 12px;
+            border-bottom: 1px solid #eee5e7;
+        }
+
+        th {
+            background: #faf5f6;
+            color: var(--maroon);
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 14px;
+        }
+
+        footer {
+            text-align: center;
+            padding: 22px;
+            color: var(--muted);
+            font-size: 13px;
+            border-top: 1px solid var(--border);
+            background: white;
+        }
+
+        footer span {
+            color: var(--maroon);
+            font-weight: 700;
+        }
+
+        @media (max-width: 650px) {
+            header {
+                align-items: flex-start;
+                flex-direction: column;
+                padding: 14px 16px;
+            }
+
+            nav {
+                width: 100%;
+            }
+
+            main {
+                padding: 22px 14px 40px;
+            }
+
+            h1 {
+                font-size: 25px;
+            }
+
+            .card {
+                padding: 16px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <header>
+        <a class="brand" href="{{ url_for('home') }}">
+            <!-- Replace this image path with your official logo file. -->
+            <img
+                class="brand-logo"
+                src="{{ url_for('static', filename='images/pup-logo.png') }}"
+                alt="PUP Calauan logo"
+                onerror="this.style.display='none'"
+            >
+
+            <span class="brand-text">
+                Campus Classroom
+                <small>PUP CALAUAN CAMPUS</small>
+            </span>
+        </a>
+
+        <nav>
+            {% if session.get('user_id') %}
+                <a href="{{ url_for('dashboard') }}">Dashboard</a>
+
+                {% if session.get('role') == 'teacher' %}
+                    <a href="{{ url_for('teacher_attendance') }}">Attendance</a>
+                {% endif %}
+
+                <a href="{{ url_for('logout') }}">Log out</a>
+            {% else %}
+                <a href="{{ url_for('login') }}">Log in</a>
+                <a href="{{ url_for('register') }}">Register</a>
+            {% endif %}
+        </nav>
+    </header>
+
+    <main>
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% for category, message in messages %}
+                <div class="flash {{ category }}">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endwith %}
+
+        {% block content %}{% endblock %}
+    </main>
+
+    <footer>
+        <span>PUP Calauan</span> | Campus Classroom Attendance System
+    </footer>
+</body>
+</html>

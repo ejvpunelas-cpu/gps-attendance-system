@@ -1,0 +1,163 @@
+```html
+{% extends "base.html" %}
+
+{% block title %}Attendance Records | Campus Classroom{% endblock %}
+
+{% block content %}
+<style>
+    .page-header {
+        background: linear-gradient(135deg, #800000, #570000);
+        color: white;
+        padding: 26px;
+        border-radius: 14px;
+        border-bottom: 5px solid #d4a72c;
+        margin-bottom: 24px;
+    }
+
+    .page-header h1 {
+        margin-top: 0;
+    }
+
+    .attendance-section {
+        background: white;
+        padding: 22px;
+        border-radius: 12px;
+        box-shadow: 0 4px 14px rgba(0,0,0,.06);
+        margin-bottom: 24px;
+    }
+
+    .attendance-section h2 {
+        color: #800000;
+        margin-top: 0;
+    }
+
+    .filter-form {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: end;
+        gap: 12px;
+        margin-bottom: 20px;
+    }
+
+    .filter-form label {
+        display: block;
+        font-weight: bold;
+        margin-bottom: 6px;
+    }
+
+    .filter-form input {
+        padding: 10px;
+        border: 1px solid #ccc;
+        border-radius: 7px;
+    }
+
+    .attendance-button {
+        padding: 11px 16px;
+        background: #800000;
+        color: white;
+        border: none;
+        border-radius: 7px;
+        font-weight: bold;
+        cursor: pointer;
+    }
+
+    .table-wrap {
+        overflow-x: auto;
+    }
+
+    .attendance-table {
+        width: 100%;
+        border-collapse: collapse;
+        min-width: 650px;
+    }
+
+    .attendance-table th,
+    .attendance-table td {
+        padding: 12px;
+        border-bottom: 1px solid #eee;
+        text-align: left;
+    }
+
+    .attendance-table th {
+        background: #800000;
+        color: white;
+    }
+
+    .muted {
+        color: #777;
+    }
+</style>
+
+<section class="page-header">
+    <h1>Student Attendance Records</h1>
+    <p>Review attendance records for your classes.</p>
+</section>
+
+<section class="attendance-section">
+    <h2>Filter Records</h2>
+
+    <form method="GET" action="{{ url_for('teacher_attendance') }}" class="filter-form">
+        <div>
+            <label for="date">Attendance Date</label>
+            <input
+                type="date"
+                id="date"
+                name="date"
+                value="{{ selected_date or '' }}"
+            >
+        </div>
+
+        <button type="submit" class="attendance-button">
+            View Records
+        </button>
+    </form>
+
+    <div class="table-wrap">
+        <table class="attendance-table">
+            <thead>
+                <tr>
+                    <th>Student</th>
+                    <th>Section</th>
+                    <th>Subject</th>
+                    <th>Date</th>
+                    <th>Check In</th>
+                    <th>Check Out</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                {% for record in records %}
+                <tr>
+                    <td>{{ record.student.full_name }}</td>
+                    <td>{{ record.student.section }}</td>
+                    <td>
+                        {% if record.schedule %}
+                            {{ record.schedule.subject }}
+                        {% else %}
+                            General Attendance
+                        {% endif %}
+                    </td>
+                    <td>{{ record.date }}</td>
+                    <td>{{ record.check_in or 'Not recorded' }}</td>
+                    <td>{{ record.check_out or 'Not recorded' }}</td>
+                    <td>{{ record.status }}</td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="7" class="muted">
+                        No attendance records found for this date.
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+
+<a href="{{ url_for('teacher') }}" class="attendance-button"
+   style="display:inline-block; text-decoration:none;">
+    Back to Teacher Dashboard
+</a>
+{% endblock %}
+```

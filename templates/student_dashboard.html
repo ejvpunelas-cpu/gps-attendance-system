@@ -1,0 +1,309 @@
+```html
+{% extends "base.html" %}
+
+{% block title %}Student Dashboard | Campus Classroom{% endblock %}
+
+{% block content %}
+<style>
+    .welcome-card {
+        background: linear-gradient(135deg, #800000, #570000);
+        color: white;
+        padding: 28px;
+        border-radius: 15px;
+        margin-bottom: 24px;
+        border-bottom: 5px solid #d4a72c;
+    }
+
+    .welcome-card h1 {
+        margin-top: 0;
+    }
+
+    .dashboard-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+        gap: 18px;
+        margin-bottom: 25px;
+    }
+
+    .dashboard-card {
+        background: white;
+        padding: 22px;
+        border-radius: 12px;
+        box-shadow: 0 4px 14px rgba(0,0,0,.06);
+        border-top: 4px solid #d4a72c;
+    }
+
+    .dashboard-card h3 {
+        color: #800000;
+        margin-top: 0;
+    }
+
+    .section-card {
+        background: white;
+        padding: 22px;
+        border-radius: 12px;
+        margin-bottom: 24px;
+        box-shadow: 0 4px 14px rgba(0,0,0,.06);
+        overflow-x: auto;
+    }
+
+    .section-card h2 {
+        color: #800000;
+        margin-top: 0;
+    }
+
+    .table-wrap {
+        overflow-x: auto;
+    }
+
+    .dashboard-table {
+        width: 100%;
+        border-collapse: collapse;
+        min-width: 550px;
+    }
+
+    .dashboard-table th,
+    .dashboard-table td {
+        padding: 12px;
+        border-bottom: 1px solid #eee;
+        text-align: left;
+    }
+
+    .dashboard-table th {
+        background: #800000;
+        color: white;
+    }
+
+    .action-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+        margin-top: 18px;
+    }
+
+    .action-button {
+        border: none;
+        border-radius: 8px;
+        padding: 12px 18px;
+        font-weight: bold;
+        cursor: pointer;
+    }
+
+    .check-in {
+        background: #800000;
+        color: white;
+    }
+
+    .check-out {
+        background: #d4a72c;
+        color: #2b2100;
+    }
+
+    .action-button:disabled {
+        opacity: .6;
+        cursor: not-allowed;
+    }
+
+    .muted {
+        color: #777;
+    }
+
+    @media (max-width: 600px) {
+        .welcome-card,
+        .section-card {
+            padding: 18px;
+        }
+    }
+</style>
+
+<section class="welcome-card">
+    <h1>Welcome, {{ student.full_name }}!</h1>
+    <p>Welcome to your Campus Classroom dashboard.</p>
+    <p>
+        <strong>Username:</strong> {{ student.username }}
+        {% if student.section %}
+            &nbsp; | &nbsp;
+            <strong>Section:</strong> {{ student.section }}
+        {% endif %}
+    </p>
+</section>
+
+<div class="dashboard-grid">
+    <div class="dashboard-card">
+        <h3>Today's Classes</h3>
+        <p>View your class schedules below.</p>
+        <strong>{{ schedules|length }} schedule(s)</strong>
+    </div>
+
+    <div class="dashboard-card">
+        <h3>Attendance Records</h3>
+        <p>Check your recent attendance activity.</p>
+        <strong>{{ records|length }} record(s)</strong>
+    </div>
+
+    <div class="dashboard-card">
+        <h3>Location Services</h3>
+        <p id="location-status" class="muted">
+            Location has not been checked yet.
+        </p>
+    </div>
+</div>
+
+<section class="section-card">
+    <h2>GPS Attendance</h2>
+    <p>
+        Allow location access when your browser asks for permission.
+        You must be within the campus attendance area to check in.
+    </p>
+
+    <div class="action-row">
+        <button
+            type="button"
+            class="action-button check-in"
+            id="check-in-button"
+            onclick="sendAttendance('/check-in')">
+            Check In
+        </button>
+
+        <button
+            type="button"
+            class="action-button check-out"
+            id="check-out-button"
+            onclick="sendAttendance('/check-out')">
+            Check Out
+        </button>
+    </div>
+
+    <p id="attendance-message" role="status" aria-live="polite"></p>
+</section>
+
+<section class="section-card">
+    <h2>Today's Class Schedules</h2>
+
+    {% if schedules %}
+        <div class="table-wrap">
+            <table class="dashboard-table">
+                <thead>
+                    <tr>
+                        <th>Class</th>
+                        <th>Section</th>
+                        <th>Day</th>
+                        <th>Start</th>
+                        <th>End</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for schedule in schedules %}
+                    <tr>
+                        <td>{{ schedule.subject }}</td>
+                        <td>{{ schedule.section }}</td>
+                        <td>{{ schedule.day }}</td>
+                        <td>{{ schedule.start_time }}</td>
+                        <td>{{ schedule.end_time }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <p class="muted">No class schedules are available for today.</p>
+    {% endif %}
+</section>
+
+<section class="section-card">
+    <h2>Recent Attendance</h2>
+
+    {% if records %}
+        <div class="table-wrap">
+            <table class="dashboard-table">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Status</th>
+                        <th>Check In</th>
+                        <th>Check Out</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for record in records %}
+                    <tr>
+                        <td>{{ record.date }}</td>
+                        <td>{{ record.status }}</td>
+                        <td>{{ record.check_in or 'Not recorded' }}</td>
+                        <td>{{ record.check_out or 'Not recorded' }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <p class="muted">You don't have any attendance records yet.</p>
+    {% endif %}
+</section>
+
+<script>
+async function sendAttendance(endpoint) {
+    const message = document.getElementById('attendance-message');
+    const status = document.getElementById('location-status');
+    const buttons = document.querySelectorAll('.action-button');
+
+    if (!navigator.geolocation) {
+        message.textContent = 'Your browser does not support GPS location.';
+        return;
+    }
+
+    buttons.forEach(button => button.disabled = true);
+    message.textContent = 'Getting your location...';
+    status.textContent = 'Requesting location permission...';
+
+    navigator.geolocation.getCurrentPosition(async position => {
+        const formData = new FormData();
+        formData.append('latitude', position.coords.latitude);
+        formData.append('longitude', position.coords.longitude);
+        formData.append('accuracy', position.coords.accuracy);
+
+        try {
+            const response = await fetch(endpoint, {
+                method: 'POST',
+                body: formData
+            });
+
+            const result = await response.json();
+
+            message.textContent =
+                result.message || result.error || 'Request completed.';
+
+            status.textContent = 'Location received successfully.';
+
+            if (response.ok) {
+                window.location.reload();
+            }
+        } catch (error) {
+            message.textContent =
+                'Unable to contact the server. Please try again.';
+        } finally {
+            buttons.forEach(button => button.disabled = false);
+        }
+    }, error => {
+        let errorMessage = 'Unable to get your location.';
+
+        if (error.code === error.PERMISSION_DENIED) {
+            errorMessage = 'Location permission was denied. Enable it in your browser settings.';
+        } else if (error.code === error.POSITION_UNAVAILABLE) {
+            errorMessage = 'Your current location is unavailable.';
+        } else if (error.code === error.TIMEOUT) {
+            errorMessage = 'Location request timed out. Try again.';
+        }
+
+        message.textContent = errorMessage;
+        status.textContent = 'Location unavailable.';
+        buttons.forEach(button => button.disabled = false);
+    }, {
+        enableHighAccuracy: true,
+        timeout: 15000,
+        maximumAge: 0
+    });
+}
+</script>
+{% endblock %}
+```
