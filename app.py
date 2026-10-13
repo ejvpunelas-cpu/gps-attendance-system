@@ -865,205 +865,167 @@ def teacher_attendance():
 # STUDENT CHECK-IN
 # ==========================================
 
+
 @app.route('/check-in', methods=['POST'])
 @login_required
 @role_required('student')
 def check_in():
-    student = db.session.get(
-        User,
-        session['user_id']
-    )
-
+    student = db.session.get(User, session['user_id'])
     now = datetime.now()
 
+    def reply(message, ok=False, status=400):
+        return jsonify(ok=ok, message=message), status
+
     try:
-        lat = float(
-            request.form.get('latitude', '')
-        )
-
-        lon = float(
-            request.form.get('longitude', '')
-        )
-
-        accuracy = float(
-            request.form.get('accuracy', '')
-        )
+        lat = float(request.form.get('latitude', ''))
+        lon = float(request.form.get('longitude', ''))
+        accuracy = float(request.form.get('accuracy', ''))
 
         if (
-            not all(
-                math.isfinite(v)
-                for v in (lat, lon, accuracy)
-            )
+            not all(math.isfinite(v) for v in (lat, lon, accuracy))
             or not -90 <= lat <= 90
             or not -180 <= lon <= 180
             or not 0 < accuracy <= 50
         ):
-            raise ValueError()
+            return reply(
+                'GPS accuracy must be 50 meters or better. Try again.',
+                status=400
+            )
 
-    except ValueError:
-        flash(
-            'GPS is missing or inaccurate. '
-            'Allow location access and try again.',
-            'error'
-        )
-
-        return redirect(
-            url_for('dashboard')
+    except (ValueError, TypeError):
+        return reply(
+            'GPS data is missing. Allow location access and try again.',
+            status=400
         )
 
     distance = distance_m(
-        CAMPUS_LATITUDE,
-        CAMPUS_LONGITUDE,
-        lat,
-        lon
+        CAMPUS_LATITUDE, CAMPUS_LONGITUDE, lat, lon
     )
 
     if distance > CAMPUS_RADIUS_METERS:
-        flash(
-            'Your location appears outside the configured '
-            'campus boundary.',
-            'error'
-        )
-
-        return redirect(
-            url_for('dashboard')
+        return reply(
+            'You appear to be outside the campus attendance area.',
+            status=403
         )
 
     eligible = [
         schedule
-        for schedule in active_classes_for_student(
-            student,
-            now
-        )
+        for schedule in active_classes_for_student(student, now)
         if (
-            datetime.combine(
-                now.date(),
-                schedule.start_time
-            ) - timedelta(minutes=60)
+            datetime.combine(now.date(), schedule.start_time)
+            - timedelta(minutes=60)
             <= now
-            <= datetime.combine(
-                now.date(),
-                schedule.end_time
-            )
+            <= datetime.combine(now.date(), schedule.end_time)
         )
     ]
 
     if not eligible:
-        flash(
-            'There is no scheduled class within the '
-            'check-in window for your section today.',
-            'error'
-        )
-
-        return redirect(
-            url_for('dashboard')
+        return reply(
+            'No scheduled class is within the check-in window today.',
+            status=400
         )
 
     saved = 0
 
-    for schedule in eligible:
-        record = get_or_create_record(
-            student,
-            schedule,
-            now.date()
-        )
-
-        if record.check_in_time is not None:
-            continue
-
-        record.check_in_time = now
-        record.last_inside_at = now
-
-        grace = (
-            schedule.grace_minutes
-            if schedule.grace_minutes is not None
-            else LATE_GRACE_MINUTES
-        )
-
-        late_after = (
-            datetime.combine(
-                now.date(),
-                schedule.start_time
+    try:
+        for schedule in eligible:
+            record = get_or_create_record(
+                student, schedule, now.date()
             )
-            + timedelta(minutes=grace)
+
+            if record.check_in_time is not None:
+                continue
+
+            record.check_in_time = now
+            record.last_inside_at = now
+
+            grace = (
+                schedule.grace_minutes
+                if schedule.grace_minutes is not None
+                else LATE_GRACE_MINUTES
+            )
+
+            late_after = (
+                datetime.combine(now.date(), schedule.start_time)
+                + timedelta(minutes=grace)
+            )
+
+            record.status = 'Late' if now > late_after else 'Present'
+            saved += 1
+
+        db.session.commit()
+
+    except Exception:
+        db.session.rollback()
+        app.logger.exception('Failed to save student check-in')
+        return reply(
+            'The server could not save your attendance. Please try again.',
+            status=500
         )
-
-        record.status = (
-            'Late'
-            if now > late_after
-            else 'Present'
-        )
-
-        saved += 1
-
-    db.session.commit()
 
     if saved:
-        flash(
+        return reply(
             f'Check-in saved for {saved} class(es).',
-            'success'
-        )
-    else:
-        flash(
-            'You are already checked in for the eligible class(es).',
-            'error'
+            ok=True,
+            status=200
         )
 
-    return redirect(
-        url_for('dashboard')
+    return reply(
+        'You are already checked in for the eligible class(es).',
+        status=409
     )
+
 
 
 # ==========================================
 # STUDENT CHECK-OUT
 # ==========================================
 
+
 @app.route('/check-out', methods=['POST'])
 @login_required
 @role_required('student')
 def check_out():
-    student = db.session.get(
-        User,
-        session['user_id']
-    )
-
+    student = db.session.get(User, session['user_id'])
     now = datetime.now()
     count = 0
 
-    for schedule in active_classes_for_student(
-        student,
-        now
-    ):
-        record = Attendance.query.filter_by(
-            user_id=student.id,
-            schedule_id=schedule.id,
-            attendance_date=now.date()
-        ).first()
+    try:
+        for schedule in active_classes_for_student(student, now):
+            record = Attendance.query.filter_by(
+                user_id=student.id,
+                schedule_id=schedule.id,
+                attendance_date=now.date()
+            ).first()
 
-        if (
-            record
-            and record.check_in_time
-            and not record.check_out_time
-        ):
-            record.check_out_time = now
-            count += 1
+            if (
+                record
+                and record.check_in_time
+                and not record.check_out_time
+            ):
+                record.check_out_time = now
+                count += 1
 
-    db.session.commit()
+        db.session.commit()
+
+    except Exception:
+        db.session.rollback()
+        app.logger.exception('Failed to save student check-out')
+        return jsonify(
+            ok=False,
+            message='The server could not save your check-out.'
+        ), 500
 
     if count:
-        flash(
-            'Checkout recorded for active class(es).',
-            'success'
-        )
-    else:
-        flash(
-            'No active checked-in class needed checkout.',
-            'error'
-        )
+        return jsonify(
+            ok=True,
+            message=f'Check-out recorded for {count} class(es).'
+        ), 200
 
-    return redirect(
-        url_for('dashboard')
-    )
+    return jsonify(
+        ok=False,
+        message='No checked-in class needs check-out.'
+    ), 400
 
 
 # ==========================================
