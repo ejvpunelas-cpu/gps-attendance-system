@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 500" role="img" aria-labelledby="title">
+<title>Polytechnic University of the Philippines inspired campus emblem</title>
+<defs>
+  <radialGradient id="bg" cx="50%" cy="35%" r="70%"><stop offset="0" stop-color="#a40018"/><stop offset="1" stop-color="#650014"/></radialGradient>
+</defs>
+<circle cx="250" cy="250" r="240" fill="url(#bg)" stroke="#d4a72c" stroke-width="12"/>
+<circle cx="250" cy="250" r="211" fill="none" stroke="#f2cf70" stroke-width="4"/>
+<circle cx="250" cy="250" r="183" fill="none" stroke="#f2cf70" stroke-width="2"/>
+<g fill="#f2cf70" stroke="#f2cf70" stroke-linejoin="round">
+  <path d="M250 100 L270 165 L338 165 L283 205 L304 270 L250 230 L196 270 L217 205 L162 165 L230 165 Z" stroke-width="3"/>
+  <circle cx="250" cy="250" r="10" fill="#fff4cf" stroke="none"/>
+</g>
+<g fill="none" stroke="#f2cf70" stroke-width="5" stroke-linecap="round">
+  <path d="M125 315 Q90 270 119 226 Q132 207 151 202"/>
+  <path d="M375 315 Q410 270 381 226 Q368 207 349 202"/>
+  <path d="M130 320 Q150 350 180 360"/>
+  <path d="M370 320 Q350 350 320 360"/>
+</g>
+<text x="250" y="315" text-anchor="middle" font-family="Georgia,serif" font-size="39" font-weight="bold" fill="#fff4cf" letter-spacing="4">PUP</text>
+<text x="250" y="390" text-anchor="middle" font-family="Arial,sans-serif" font-size="21" font-weight="bold" fill="#f2cf70" letter-spacing="3">CALAUAN CAMPUS</text>
+</svg>
