@@ -10,8 +10,27 @@ async function refreshLocationStatuses() {
         if (!response.ok) return;
         const result = await response.json();
         result.rows.forEach(function(item) {
-            const row = document.getElementById('location-row-' + item.record_id);
-            if (!row) return;
+            let row = document.getElementById('location-row-' + item.record_id);
+
+            if (!row) {
+                const emptyRow = document.getElementById('no-location-rows');
+                if (emptyRow) emptyRow.remove();
+
+                const table = document.getElementById('location-status-table');
+                if (!table) return;
+
+                row = document.createElement('tr');
+                row.id = 'location-row-' + item.record_id;
+                row.innerHTML =
+                    '<td></td><td></td><td></td>' +
+                    '<td class="live-location-status"></td>' +
+                    '<td class="live-location-update"></td>';
+                row.cells[0].textContent = item.student;
+                row.cells[1].textContent = item.section;
+                row.cells[2].textContent = item.subject;
+                table.querySelector('tbody').appendChild(row);
+            }
+
             const statusCell = row.querySelector('.live-location-status');
             const updateCell = row.querySelector('.live-location-update');
             const colors = {
@@ -406,7 +425,7 @@ window.setInterval(refreshLocationStatuses, 15000);
 
     {% if location_rows %}
         <div class="table-wrap">
-            <table class="teacher-table">
+            <table class="teacher-table" id="location-status-table">
                 <thead>
                     <tr>
                         <th>Student</th>
@@ -441,13 +460,14 @@ window.setInterval(refreshLocationStatuses, 15000);
                             {% endif %}
                         </td>
                     </tr>
+                    {% else %}
+                    <tr id="no-location-rows">
+                        <td colspan="5" class="muted">No students have checked in to today's classes yet.</td>
+                    </tr>
                     {% endfor %}
                 </tbody>
             </table>
         </div>
-    {% else %}
-        <p class="muted">No students have checked in to today's classes yet.</p>
-    {% endif %}
 </section>
 
 {% if notices %}
