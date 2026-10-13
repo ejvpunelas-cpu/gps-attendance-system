@@ -797,6 +797,41 @@ def add_schedule():
                 'End time must be later than start time.'
             )
 
+        # Prevent section and teacher schedule conflicts.
+        day_schedules = Schedule.query.filter_by(
+            day_of_week=day
+        ).all()
+
+        section_conflicts = [
+            item for item in day_schedules
+            if item.section.strip().casefold() == section.casefold()
+            and start < item.end_time
+            and end > item.start_time
+        ]
+
+        if section_conflicts:
+            conflict = section_conflicts[0]
+            raise ValueError(
+                f"Section {section} already has {conflict.subject} "
+                f"from {conflict.start_time.strftime('%I:%M %p')} to "
+                f"{conflict.end_time.strftime('%I:%M %p')} on that day."
+            )
+
+        teacher_conflicts = [
+            item for item in day_schedules
+            if item.teacher_id == session['user_id']
+            and start < item.end_time
+            and end > item.start_time
+        ]
+
+        if teacher_conflicts:
+            conflict = teacher_conflicts[0]
+            raise ValueError(
+                f"You already have {conflict.subject} from "
+                f"{conflict.start_time.strftime('%I:%M %p')} to "
+                f"{conflict.end_time.strftime('%I:%M %p')} on that day."
+            )
+
     except (ValueError, TypeError) as error:
         message = str(error)
 
@@ -838,6 +873,42 @@ def add_schedule():
 
     flash('Class schedule added successfully!', 'success')
     return redirect(url_for('teacher_dashboard'))
+
+
+@app.route('/schedule/section-preview')
+@login_required
+@role_required('teacher')
+def section_schedule_preview():
+    section = request.args.get('section', '').strip()
+    day_value = request.args.get('day', '')
+
+    try:
+        day = int(day_value)
+        if day not in range(7):
+            raise ValueError()
+    except (ValueError, TypeError):
+        return jsonify(schedules=[])
+
+    if not section:
+        return jsonify(schedules=[])
+
+    schedules = Schedule.query.filter_by(day_of_week=day).all()
+    schedules = [
+        item for item in schedules
+        if item.section.strip().casefold() == section.casefold()
+    ]
+    schedules.sort(key=lambda item: item.start_time)
+
+    return jsonify(schedules=[
+        {
+            'subject': item.subject,
+            'teacher': item.teacher.username,
+            'room': item.room or '',
+            'start': item.start_time.strftime('%I:%M %p'),
+            'end': item.end_time.strftime('%I:%M %p')
+        }
+        for item in schedules
+    ])
 
 
 # ==========================================
