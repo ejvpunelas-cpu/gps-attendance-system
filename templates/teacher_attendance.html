@@ -1,8 +1,10 @@
+
 {% extends "base.html" %}
 
 {% block title %}Attendance Records | Campus Classroom{% endblock %}
 
 {% block content %}
+
 <style>
     .page-header {
         background: linear-gradient(135deg, #800000, #570000);
@@ -21,7 +23,7 @@
         background: white;
         padding: 22px;
         border-radius: 12px;
-        box-shadow: 0 4px 14px rgba(0,0,0,.06);
+        box-shadow: 0 4px 14px rgba(0, 0, 0, 0.06);
         margin-bottom: 24px;
     }
 
@@ -51,6 +53,7 @@
     }
 
     .attendance-button {
+        display: inline-block;
         padding: 11px 16px;
         background: #800000;
         color: white;
@@ -58,6 +61,11 @@
         border-radius: 7px;
         font-weight: bold;
         cursor: pointer;
+        text-decoration: none;
+    }
+
+    .attendance-button:hover {
+        background: #570000;
     }
 
     .table-wrap {
@@ -67,7 +75,7 @@
     .attendance-table {
         width: 100%;
         border-collapse: collapse;
-        min-width: 650px;
+        min-width: 750px;
     }
 
     .attendance-table th,
@@ -85,6 +93,32 @@
     .muted {
         color: #777;
     }
+
+    .status {
+        font-weight: bold;
+    }
+
+    .status-present {
+        color: #16803c;
+    }
+
+    .status-late {
+        color: #b77900;
+    }
+
+    .status-absent {
+        color: #c62828;
+    }
+
+    @media (max-width: 600px) {
+        .attendance-section {
+            padding: 14px;
+        }
+
+        .page-header {
+            padding: 20px;
+        }
+    }
 </style>
 
 <section class="page-header">
@@ -95,14 +129,20 @@
 <section class="attendance-section">
     <h2>Filter Records</h2>
 
-    <form method="GET" action="{{ url_for('teacher_attendance') }}" class="filter-form">
+    <form
+        method="GET"
+        action="{{ url_for('teacher_attendance') }}"
+        class="filter-form"
+    >
         <div>
             <label for="date">Attendance Date</label>
+
             <input
                 type="date"
                 id="date"
                 name="date"
-                value="{{ selected_date or '' }}"
+                value="{{ selected_date.isoformat() }}"
+                required
             >
         </div>
 
@@ -126,26 +166,52 @@
             </thead>
 
             <tbody>
-                {% for record in records %}
+                {% for row in rows %}
                 <tr>
-                    <td>{{ record.student.full_name }}</td>
-                    <td>{{ record.student.section }}</td>
+                    <td>{{ row.student.username }}</td>
+
+                    <td>{{ row.schedule.section }}</td>
+
+                    <td>{{ row.schedule.subject }}</td>
+
+                    <td>{{ selected_date.strftime('%b %d, %Y') }}</td>
+
                     <td>
-                        {% if record.schedule %}
-                            {{ record.schedule.subject }}
+                        {% if row.record and row.record.check_in_time %}
+                            {{ row.record.check_in_time.strftime('%I:%M %p') }}
                         {% else %}
-                            General Attendance
+                            Not recorded
                         {% endif %}
                     </td>
-                    <td>{{ record.date }}</td>
-                    <td>{{ record.check_in or 'Not recorded' }}</td>
-                    <td>{{ record.check_out or 'Not recorded' }}</td>
-                    <td>{{ record.status }}</td>
+
+                    <td>
+                        {% if row.record and row.record.check_out_time %}
+                            {{ row.record.check_out_time.strftime('%I:%M %p') }}
+                        {% else %}
+                            Not recorded
+                        {% endif %}
+                    </td>
+
+                    <td>
+                        <span class="status
+                            {% if row.status == 'Present' %}
+                                status-present
+                            {% elif row.status == 'Late' %}
+                                status-late
+                            {% elif row.status == 'Absent' %}
+                                status-absent
+                            {% endif %}
+                        ">
+                            {{ row.status }}
+                        </span>
+                    </td>
                 </tr>
+
                 {% else %}
                 <tr>
                     <td colspan="7" class="muted">
-                        No attendance records found for this date.
+                        No students or attendance records found for your
+                        classes on this date.
                     </td>
                 </tr>
                 {% endfor %}
@@ -154,9 +220,11 @@
     </div>
 </section>
 
-<a href="{{ url_for('teacher') }}" class="attendance-button"
-   style="display:inline-block; text-decoration:none;">
+<a
+    href="{{ url_for('teacher_dashboard') }}"
+    class="attendance-button"
+>
     Back to Teacher Dashboard
 </a>
+
 {% endblock %}
-```
