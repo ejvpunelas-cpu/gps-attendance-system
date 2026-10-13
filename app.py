@@ -1180,6 +1180,9 @@ def teacher_location_status():
     for record in records:
         rows.append({
             'record_id': record.id,
+            'student': record.student.username,
+            'section': record.schedule.section,
+            'subject': record.schedule.subject,
             'status': get_location_status(record, now),
             'last_update': (
                 record.last_location_at.strftime('%I:%M:%S %p')
