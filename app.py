@@ -583,15 +583,46 @@ def dashboard():
         Attendance.attendance_date.desc()
     ).limit(30).all()
 
+    now = local_now()
+    class_sessions = []
+
+    for schedule in schedules:
+        record = Attendance.query.filter_by(
+            user_id=student.id,
+            schedule_id=schedule.id,
+            attendance_date=now.date()
+        ).first()
+
+        check_in_start = (
+            datetime.combine(now.date(), schedule.start_time)
+            - timedelta(minutes=5)
+        )
+        check_in_end = datetime.combine(now.date(), schedule.end_time)
+
+        class_sessions.append({
+            'schedule': schedule,
+            'record': record,
+            'can_check_in': (
+                check_in_start <= now <= check_in_end
+                and (record is None or record.check_in_time is None)
+            ),
+            'can_check_out': (
+                record is not None
+                and record.check_in_time is not None
+                and record.check_out_time is None
+            )
+        })
+
     return render_template(
         'student_dashboard.html',
         student=student,
         schedules=schedules,
+        class_sessions=class_sessions,
         records=records,
-        now=local_now(),
+        now=now,
         tracking_active=any(
             record.check_in_time and not record.check_out_time
-            and record.attendance_date == local_now().date()
+            and record.attendance_date == now.date()
             for record in records
         )
     )
@@ -931,78 +962,78 @@ def check_in():
             status=403
         )
 
-    eligible = [
-        schedule
-        for schedule in active_classes_for_student(student, now)
-        if (
-            datetime.combine(now.date(), schedule.start_time)
-            - timedelta(minutes=5)
-            <= now
-            <= datetime.combine(now.date(), schedule.end_time)
-        )
-    ]
-
-    if not eligible:
+    schedule_id = request.form.get('schedule_id', type=int)
+    if not schedule_id:
         return reply(
-            'No scheduled class is within the check-in window today.',
+            'Choose the specific class you want to check in for.',
             status=400
         )
 
-    saved = 0
+    schedule = Schedule.query.filter_by(
+        id=schedule_id,
+        section=student.section,
+        day_of_week=now.weekday()
+    ).first()
+
+    if schedule is None:
+        return reply(
+            'That class is not scheduled for your section today.',
+            status=404
+        )
+
+    check_in_start = (
+        datetime.combine(now.date(), schedule.start_time)
+        - timedelta(minutes=5)
+    )
+    check_in_end = datetime.combine(now.date(), schedule.end_time)
+
+    if not check_in_start <= now <= check_in_end:
+        return reply(
+            'This class is outside its check-in window. Check the class schedule.',
+            status=400
+        )
 
     try:
-        for schedule in eligible:
-            record = get_or_create_record(
-                student,
-                schedule,
-                now.date()
+        record = get_or_create_record(student, schedule, now.date())
+
+        if record.check_in_time is not None:
+            return reply(
+                'You are already checked in for this class.',
+                status=409
             )
 
-            if record.check_in_time is not None:
-                continue
+        record.check_in_time = now
+        record.last_inside_at = now
+        record.last_location_at = now
+        record.location_status = 'On Campus'
+        record.departure_alerted = False
 
-            record.check_in_time = now
-            record.last_inside_at = now
-            record.last_location_at = now
-            record.location_status = 'On Campus'
-            record.departure_alerted = False
-
-            grace = (
-                schedule.grace_minutes
-                if schedule.grace_minutes is not None
-                else LATE_GRACE_MINUTES
-            )
-
-            late_after = (
-                datetime.combine(now.date(), schedule.start_time)
-                + timedelta(minutes=grace)
-            )
-
-            # Students are marked late only after the schedule's grace period.
-            record.status = 'Late' if now > late_after else 'Present'
-            saved += 1
+        grace = (
+            schedule.grace_minutes
+            if schedule.grace_minutes is not None
+            else LATE_GRACE_MINUTES
+        )
+        late_after = (
+            datetime.combine(now.date(), schedule.start_time)
+            + timedelta(minutes=grace)
+        )
+        record.status = 'Late' if now > late_after else 'Present'
 
         db.session.commit()
 
     except Exception:
         db.session.rollback()
         app.logger.exception('Failed to save student check-in')
-
         return reply(
             'The server could not save your attendance. Please try again.',
             status=500
         )
 
-    if saved:
-        return reply(
-            f'Check-in saved for {saved} class(es).',
-            ok=True,
-            status=200
-        )
-
+    status_message = 'Late' if record.status == 'Late' else 'Present (on time)'
     return reply(
-        'You are already checked in for the eligible class(es).',
-        status=409
+        f'{schedule.subject}: check-in saved. Attendance: {status_message}.',
+        ok=True,
+        status=200
     )
 
 
@@ -1016,46 +1047,61 @@ def check_in():
 def check_out():
     student = db.session.get(User, session['user_id'])
     now = local_now()
-    count = 0
+    schedule_id = request.form.get('schedule_id', type=int)
+
+    if not schedule_id:
+        return jsonify(
+            ok=False,
+            message='Choose the specific class you want to check out from.'
+        ), 400
+
+    schedule = Schedule.query.filter_by(
+        id=schedule_id,
+        section=student.section,
+        day_of_week=now.weekday()
+    ).first()
+
+    if schedule is None:
+        return jsonify(
+            ok=False,
+            message='That class is not scheduled for your section today.'
+        ), 404
+
+    record = Attendance.query.filter_by(
+        user_id=student.id,
+        schedule_id=schedule.id,
+        attendance_date=now.date()
+    ).first()
+
+    if not record or not record.check_in_time:
+        return jsonify(
+            ok=False,
+            message='You have not checked in for this class.'
+        ), 400
+
+    if record.check_out_time:
+        return jsonify(
+            ok=False,
+            message='You have already checked out of this class.'
+        ), 409
 
     try:
-        for schedule in active_classes_for_student(student, now):
-            record = Attendance.query.filter_by(
-                user_id=student.id,
-                schedule_id=schedule.id,
-                attendance_date=now.date()
-            ).first()
-
-            if (
-                record
-                and record.check_in_time
-                and not record.check_out_time
-            ):
-                record.check_out_time = now
-                record.location_status = 'Checked Out'
-                count += 1
-
+        record.check_out_time = now
+        record.location_status = 'Checked Out'
         db.session.commit()
 
     except Exception:
         db.session.rollback()
         app.logger.exception('Failed to save student check-out')
-
         return jsonify(
             ok=False,
             message='The server could not save your check-out.'
         ), 500
 
-    if count:
-        return jsonify(
-            ok=True,
-            message=f'Check-out recorded for {count} class(es).'
-        ), 200
-
     return jsonify(
-        ok=False,
-        message='No checked-in class needs check-out.'
-    ), 400
+        ok=True,
+        message=f'{schedule.subject}: check-out recorded.'
+    ), 200
 
 
 # ==========================================
