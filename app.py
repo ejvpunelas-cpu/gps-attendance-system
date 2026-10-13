@@ -75,7 +75,7 @@ CAMPUS_LONGITUDE = float(
 )
 
 CAMPUS_RADIUS_METERS = float(
-    os.environ.get('CAMPUS_RADIUS_METERS', '100')
+    os.environ.get('CAMPUS_RADIUS_METERS', '10000')
 )
 
 LATE_GRACE_MINUTES = 10
