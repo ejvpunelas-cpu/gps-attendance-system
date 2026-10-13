@@ -159,50 +159,74 @@
         You must be within the campus attendance area to check in.
     </p>
 
-    <div class="action-row">
-        <button
-            type="button"
-            class="action-button check-in"
-            id="check-in-button"
-            onclick="sendAttendance('/check-in')">
-            Check In
-        </button>
-
-        <button
-            type="button"
-            class="action-button check-out"
-            id="check-out-button"
-            onclick="sendAttendance('/check-out')">
-            Check Out
-        </button>
-    </div>
-
     <p id="attendance-message" role="status" aria-live="polite"></p>
+    <p class="muted">Use the buttons under the specific class you are attending.</p>
 </section>
 
 <section class="section-card">
     <h2>Today's Class Schedules</h2>
 
-    {% if schedules %}
+    {% if class_sessions %}
         <div class="table-wrap">
             <table class="dashboard-table">
                 <thead>
                     <tr>
                         <th>Class</th>
+                        <th>Professor</th>
                         <th>Section</th>
                         <th>Day</th>
                         <th>Start</th>
                         <th>End</th>
+                        <th>Attendance</th>
+                        <th>Actions</th>
                     </tr>
                 </thead>
                 <tbody>
-                    {% for schedule in schedules %}
+                    {% for item in class_sessions %}
+                    {% set schedule = item.schedule %}
+                    {% set record = item.record %}
                     <tr>
                         <td>{{ schedule.subject }}</td>
+                        <td>{{ schedule.teacher.username if schedule.teacher else 'Teacher' }}</td>
                         <td>{{ schedule.section }}</td>
                         <td>{{ ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'][schedule.day_of_week] }}</td>
                         <td>{{ schedule.start_time.strftime('%I:%M %p') }}</td>
                         <td>{{ schedule.end_time.strftime('%I:%M %p') }}</td>
+                        <td>
+                            {% if record and record.check_in_time %}
+                                {% if record.status == 'Late' %}
+                                    <strong style="color:#c62828;">Late</strong>
+                                {% else %}
+                                    <strong style="color:#16803c;">Present (On time)</strong>
+                                {% endif %}
+                                {% if record.check_out_time %}
+                                    <br><span class="muted">Checked out</span>
+                                {% endif %}
+                            {% elif item.is_absent %}
+                                <strong style="color:#c62828;">Absent</strong>
+                            {% else %}
+                                <span class="muted">Not checked in</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <div class="action-row" style="margin-top:0;">
+                                {% if item.can_check_in %}
+                                    <button type="button" class="action-button check-in" onclick="sendAttendance('/check-in', {{ schedule.id }}, this)">Check In</button>
+                                {% elif record and record.check_in_time %}
+                                    <button type="button" class="action-button check-in" disabled>Checked In</button>
+                                {% else %}
+                                    <button type="button" class="action-button check-in" disabled>Check-in Unavailable</button>
+                                {% endif %}
+
+                                {% if item.can_check_out %}
+                                    <button type="button" class="action-button check-out" onclick="sendAttendance('/check-out', {{ schedule.id }}, this)">Check Out</button>
+                                {% elif record and record.check_out_time %}
+                                    <button type="button" class="action-button check-out" disabled>Checked Out</button>
+                                {% else %}
+                                    <button type="button" class="action-button check-out" disabled>Not Checked In</button>
+                                {% endif %}
+                            </div>
+                        </td>
                     </tr>
                     {% endfor %}
                 </tbody>
@@ -258,10 +282,10 @@
 
 <script>
 
-async function sendAttendance(endpoint) {
+async function sendAttendance(endpoint, scheduleId, clickedButton) {
     const message = document.getElementById('attendance-message');
     const status = document.getElementById('location-status');
-    const buttons = document.querySelectorAll('.action-button');
+    const buttons = clickedButton ? [clickedButton] : [];
 
     if (!navigator.geolocation) {
         message.textContent = 'Your browser does not support GPS location.';
@@ -280,6 +304,7 @@ async function sendAttendance(endpoint) {
             formData.append('latitude', position.coords.latitude);
             formData.append('longitude', position.coords.longitude);
             formData.append('accuracy', position.coords.accuracy);
+            formData.append('schedule_id', scheduleId);
 
             try {
                 const response = await fetch(endpoint, {
