@@ -367,6 +367,59 @@
     </a>
 </section>
 
+<section class="teacher-section">
+    <h2>Student Location Status</h2>
+    <p class="muted">
+        Location Lost means no valid GPS update has arrived for more than 60 seconds.
+        Attendance status is separate from location status.
+    </p>
+
+    {% if location_rows %}
+        <div class="table-wrap">
+            <table class="teacher-table">
+                <thead>
+                    <tr>
+                        <th>Student</th>
+                        <th>Section</th>
+                        <th>Subject</th>
+                        <th>Location Status</th>
+                        <th>Last GPS Update</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in location_rows %}
+                    <tr>
+                        <td>{{ row.student.username }}</td>
+                        <td>{{ row.schedule.section }}</td>
+                        <td>{{ row.schedule.subject }}</td>
+                        <td>
+                            {% if row.status == 'On Campus' %}
+                                <strong style="color: #16803c;">● On Campus</strong>
+                            {% elif row.status == 'Outside Campus' %}
+                                <strong style="color: #c62828;">● Outside Campus</strong>
+                            {% elif row.status == 'Location Lost' %}
+                                <strong style="color: #b77900;">● Location Lost</strong>
+                            {% elif row.status == 'Checked Out' %}
+                                <strong style="color: #777;">● Checked Out</strong>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if row.last_update %}
+                                {{ row.last_update.strftime('%I:%M:%S %p') }}
+                            {% else %}
+                                No update received
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <p class="muted">No students have checked in to today's classes yet.</p>
+    {% endif %}
+</section>
+
 {% if notices %}
 <section class="teacher-section">
     <h2>Recent Notices</h2>
