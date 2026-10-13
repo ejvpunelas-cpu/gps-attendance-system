@@ -978,8 +978,8 @@ def check_in():
                 + timedelta(minutes=grace)
             )
 
-            class_start = datetime.combine(now.date(), schedule.start_time)
-            record.status = 'Late' if now > class_start else 'Present'
+            # Students are marked late only after the schedule's grace period.
+            record.status = 'Late' if now > late_after else 'Present'
             saved += 1
 
         db.session.commit()
