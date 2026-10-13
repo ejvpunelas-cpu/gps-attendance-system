@@ -1,7 +1,37 @@
 
 {% extends "base.html" %}
 
-{% block title %}Teacher Dashboard | Campus Classroom{% endblock %}
+{% block title %}Teacher Dashboard | Campus Classroom<script>
+async function refreshLocationStatuses() {
+    try {
+        const response = await fetch('/teacher/location-status', {
+            headers: { 'Accept': 'application/json' }
+        });
+        if (!response.ok) return;
+        const result = await response.json();
+        result.rows.forEach(function(item) {
+            const row = document.getElementById('location-row-' + item.record_id);
+            if (!row) return;
+            const statusCell = row.querySelector('.live-location-status');
+            const updateCell = row.querySelector('.live-location-update');
+            const colors = {
+                'On Campus': '#16803c',
+                'Outside Campus': '#c62828',
+                'Location Lost': '#b77900',
+                'Checked Out': '#777'
+            };
+            statusCell.textContent = '● ' + item.status;
+            statusCell.style.color = colors[item.status] || '#777';
+            updateCell.textContent = item.last_update || 'No update received';
+        });
+    } catch (error) {
+        console.error('Could not refresh student location statuses:', error);
+    }
+}
+window.setInterval(refreshLocationStatuses, 15000);
+</script>
+
+{% endblock %}
 
 {% block content %}
 <style>
@@ -388,11 +418,11 @@
                 </thead>
                 <tbody>
                     {% for row in location_rows %}
-                    <tr>
+                    <tr id="location-row-{{ row.record.id }}">
                         <td>{{ row.student.username }}</td>
                         <td>{{ row.schedule.section }}</td>
                         <td>{{ row.schedule.subject }}</td>
-                        <td>
+                        <td class="live-location-status">
                             {% if row.status == 'On Campus' %}
                                 <strong style="color: #16803c;">● On Campus</strong>
                             {% elif row.status == 'Outside Campus' %}
@@ -403,7 +433,7 @@
                                 <strong style="color: #777;">● Checked Out</strong>
                             {% endif %}
                         </td>
-                        <td>
+                        <td class="live-location-update">
                             {% if row.last_update %}
                                 {{ row.last_update.strftime('%I:%M:%S %p') }}
                             {% else %}
