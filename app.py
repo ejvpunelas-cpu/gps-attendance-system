@@ -1157,6 +1157,40 @@ def location_update():
 
 
 # ==========================================
+# TEACHER LIVE LOCATION STATUS
+# ==========================================
+
+@app.route('/teacher/location-status')
+@login_required
+@role_required('teacher')
+def teacher_location_status():
+    now = local_now()
+
+    records = Attendance.query.join(
+        Schedule,
+        Attendance.schedule_id == Schedule.id
+    ).filter(
+        Schedule.teacher_id == session['user_id'],
+        Attendance.attendance_date == now.date(),
+        Attendance.check_in_time.isnot(None)
+    ).all()
+
+    rows = []
+
+    for record in records:
+        rows.append({
+            'record_id': record.id,
+            'status': get_location_status(record, now),
+            'last_update': (
+                record.last_location_at.strftime('%I:%M:%S %p')
+                if record.last_location_at else None
+            )
+        })
+
+    return jsonify(rows=rows)
+
+
+# ==========================================
 # MARK TEACHER NOTICE AS READ
 # ==========================================
 
