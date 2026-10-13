@@ -98,7 +98,7 @@ CAMPUS_RADIUS_METERS = float(
     os.environ.get('CAMPUS_RADIUS_METERS', '10000')
 )
 
-LATE_GRACE_MINUTES = 10
+LATE_GRACE_MINUTES = 15
 
 
 # ==========================================
@@ -595,7 +595,7 @@ def dashboard():
 
         check_in_start = (
             datetime.combine(now.date(), schedule.start_time)
-            - timedelta(minutes=5)
+            - timedelta(minutes=10)
         )
         check_in_end = datetime.combine(now.date(), schedule.end_time)
 
@@ -1065,7 +1065,7 @@ def check_in():
 
     check_in_start = (
         datetime.combine(now.date(), schedule.start_time)
-        - timedelta(minutes=5)
+        - timedelta(minutes=10)
     )
     check_in_end = datetime.combine(now.date(), schedule.end_time)
 
