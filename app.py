@@ -7,7 +7,7 @@ from functools import wraps
 
 from flask import (
     Flask, render_template, request, redirect,
-    url_for, session, flash, jsonify
+    url_for, session, flash, jsonify, send_from_directory
 )
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -444,6 +444,15 @@ def get_or_create_record(student, schedule, day=None):
 # ==========================================
 # HOME PAGE
 # ==========================================
+
+@app.route('/google0500e77cb6cb5f8a.html')
+def google_site_verification():
+    return send_from_directory(
+        os.path.dirname(os.path.abspath(__file__)),
+        'google0500e77cb6cb5f8a.html',
+        mimetype='text/html'
+    )
+
 
 @app.route('/')
 def home():
