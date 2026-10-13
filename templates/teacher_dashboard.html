@@ -1,3 +1,4 @@
+
 {% extends "base.html" %}
 
 {% block title %}Teacher Dashboard | Campus Classroom{% endblock %}
@@ -29,7 +30,7 @@
         padding: 22px;
         border-radius: 12px;
         border-top: 4px solid #d4a72c;
-        box-shadow: 0 4px 14px rgba(0,0,0,.06);
+        box-shadow: 0 4px 14px rgba(0, 0, 0, 0.06);
     }
 
     .stat-card h3 {
@@ -42,7 +43,7 @@
         padding: 22px;
         border-radius: 12px;
         margin-bottom: 24px;
-        box-shadow: 0 4px 14px rgba(0,0,0,.06);
+        box-shadow: 0 4px 14px rgba(0, 0, 0, 0.06);
     }
 
     .teacher-section h2 {
@@ -137,6 +138,24 @@
         cursor: pointer;
     }
 
+    .flash-message {
+        padding: 12px 16px;
+        border-radius: 8px;
+        margin-bottom: 18px;
+        background: #fff3cd;
+        color: #664d03;
+    }
+
+    .flash-success {
+        background: #d1e7dd;
+        color: #0f5132;
+    }
+
+    .flash-error {
+        background: #f8d7da;
+        color: #842029;
+    }
+
     @media (max-width: 600px) {
         .teacher-welcome,
         .teacher-section {
@@ -144,6 +163,18 @@
         }
     }
 </style>
+
+{% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+        {% for category, message in messages %}
+            <div class="flash-message
+                {% if category == 'success' %}flash-success{% endif %}
+                {% if category == 'error' %}flash-error{% endif %}">
+                {{ message }}
+            </div>
+        {% endfor %}
+    {% endif %}
+{% endwith %}
 
 <section class="teacher-welcome">
     <h1>Teacher Dashboard</h1>
@@ -169,6 +200,7 @@
 
     <form method="POST" action="{{ url_for('add_schedule') }}">
         <div class="form-grid">
+
             <div class="form-group">
                 <label for="subject">Subject</label>
                 <input
@@ -192,16 +224,17 @@
             </div>
 
             <div class="form-group">
-                <label for="day">Day</label>
-                <select id="day" name="day" required>
+                <label for="day_of_week">Day</label>
+
+                <select id="day_of_week" name="day_of_week" required>
                     <option value="">Select a day</option>
-                    <option value="Monday">Monday</option>
-                    <option value="Tuesday">Tuesday</option>
-                    <option value="Wednesday">Wednesday</option>
-                    <option value="Thursday">Thursday</option>
-                    <option value="Friday">Friday</option>
-                    <option value="Saturday">Saturday</option>
-                    <option value="Sunday">Sunday</option>
+                    <option value="0">Monday</option>
+                    <option value="1">Tuesday</option>
+                    <option value="2">Wednesday</option>
+                    <option value="3">Thursday</option>
+                    <option value="4">Friday</option>
+                    <option value="5">Saturday</option>
+                    <option value="6">Sunday</option>
                 </select>
             </div>
 
@@ -234,6 +267,7 @@
                     placeholder="Enter room"
                 >
             </div>
+
         </div>
 
         <button type="submit" class="teacher-button">
@@ -257,14 +291,17 @@
                         <th>End</th>
                     </tr>
                 </thead>
+
                 <tbody>
                     {% for schedule in today_schedules %}
                     <tr>
                         <td>{{ schedule.subject }}</td>
                         <td>{{ schedule.section }}</td>
-                        <td>{{ schedule.day }}</td>
-                        <td>{{ schedule.start_time }}</td>
-                        <td>{{ schedule.end_time }}</td>
+                        <td>
+                            {{ ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'][schedule.day_of_week] }}
+                        </td>
+                        <td>{{ schedule.start_time.strftime('%I:%M %p') }}</td>
+                        <td>{{ schedule.end_time.strftime('%I:%M %p') }}</td>
                     </tr>
                     {% endfor %}
                 </tbody>
@@ -291,14 +328,17 @@
                         <th>Action</th>
                     </tr>
                 </thead>
+
                 <tbody>
                     {% for schedule in schedules %}
                     <tr>
                         <td>{{ schedule.subject }}</td>
                         <td>{{ schedule.section }}</td>
-                        <td>{{ schedule.day }}</td>
-                        <td>{{ schedule.start_time }}</td>
-                        <td>{{ schedule.end_time }}</td>
+                        <td>
+                            {{ ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'][schedule.day_of_week] }}
+                        </td>
+                        <td>{{ schedule.start_time.strftime('%I:%M %p') }}</td>
+                        <td>{{ schedule.end_time.strftime('%I:%M %p') }}</td>
                         <td>
                             <form
                                 method="POST"
@@ -319,7 +359,10 @@
         <p class="muted">No schedules have been added yet.</p>
     {% endif %}
 
-    <a href="{{ url_for('teacher_attendance') }}" class="teacher-button gold-button">
+    <a
+        href="{{ url_for('teacher_attendance') }}"
+        class="teacher-button gold-button"
+    >
         View Attendance Records
     </a>
 </section>
@@ -327,13 +370,13 @@
 {% if notices %}
 <section class="teacher-section">
     <h2>Recent Notices</h2>
+
     {% for notice in notices %}
         <div style="padding: 12px 0; border-bottom: 1px solid #eee;">
-            <strong>{{ notice.title }}</strong>
             <p>{{ notice.message }}</p>
         </div>
     {% endfor %}
 </section>
 {% endif %}
+
 {% endblock %}
-```
