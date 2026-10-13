@@ -70,15 +70,22 @@
 
 <style>
     .hero {
-        display: grid;
-        grid-template-columns: 1fr;
+        display: flex;
+        justify-content: center;
         align-items: center;
+        text-align: center;
         background: linear-gradient(135deg, #800000, #570000);
         color: white;
-        padding: 55px 45px;
+        padding: 65px 30px;
         border-radius: 18px;
         border-bottom: 6px solid #d4a72c;
         overflow: hidden;
+    }
+
+    .hero-content {
+        width: 100%;
+        max-width: 760px;
+        margin: 0 auto;
     }
 
     .eyebrow {
@@ -102,13 +109,15 @@
 
     .hero-description {
         max-width: 540px;
+        margin: 0 auto 28px;
         color: #f4e7e7;
         font-size: 16px;
-        margin-bottom: 28px;
     }
 
     .hero-buttons {
         display: flex;
+        justify-content: center;
+        align-items: center;
         gap: 12px;
         flex-wrap: wrap;
     }
@@ -185,17 +194,7 @@
 
     @media (max-width: 750px) {
         .hero {
-            padding: 35px 23px;
-            text-align: center;
-        }
-
-        .hero-description {
-            margin-left: auto;
-            margin-right: auto;
-        }
-
-        .hero-buttons {
-            justify-content: center;
+            padding: 40px 20px;
         }
 
         .feature-grid {
