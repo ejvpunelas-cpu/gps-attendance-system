@@ -610,6 +610,17 @@ def dashboard():
                 record is not None
                 and record.check_in_time is not None
                 and record.check_out_time is None
+            ),
+            'is_absent': (
+                (record is None or record.check_in_time is None)
+                and now > (
+                    datetime.combine(now.date(), schedule.start_time)
+                    + timedelta(minutes=(
+                        schedule.grace_minutes
+                        if schedule.grace_minutes is not None
+                        else LATE_GRACE_MINUTES
+                    ))
+                )
             )
         })
 
