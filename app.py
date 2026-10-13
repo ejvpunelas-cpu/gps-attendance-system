@@ -472,6 +472,13 @@ def register():
         section = request.form.get('section', '').strip()
         code = request.form.get('teacher_code', '')
 
+        valid_sections = {
+            f'{course} {year}-{section_number}'
+            for course in ('BTLED', 'BSENT', 'BSIT')
+            for year in range(1, 5)
+            for section_number in range(1, 4)
+        }
+
         message = None
 
         if not username or not password:
@@ -486,10 +493,8 @@ def register():
         elif role == 'teacher' and code != TEACHER_CODE:
             message = 'Invalid teacher authorization code.'
 
-        elif role == 'student' and not section:
-            message = (
-                'Enter your class/section so schedules can be matched.'
-            )
+        elif role == 'student' and section not in valid_sections:
+            message = 'Please select a valid course, year, and section.'
 
         elif User.query.filter_by(username=username).first():
             message = 'Username already exists.'
@@ -787,8 +792,15 @@ def add_schedule():
         if not subject:
             raise ValueError('Please enter a subject.')
 
-        if not section:
-            raise ValueError('Please enter a section.')
+        valid_sections = {
+            f'{course} {year}-{section_number}'
+            for course in ('BTLED', 'BSENT', 'BSIT')
+            for year in range(1, 5)
+            for section_number in range(1, 4)
+        }
+
+        if section not in valid_sections:
+            raise ValueError('Please select a valid course, year, and section.')
 
         if day not in range(7):
             raise ValueError('Please select a valid day.')
