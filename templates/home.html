@@ -1,4 +1,3 @@
-
 {% extends "base.html" %}
 
 {% block title %}Welcome | PUP Calauan Campus Classroom{% endblock %}
@@ -27,25 +26,6 @@
                 Create an Account
             </a>
         </div>
-    </div>
-
-    <div class="hero-emblem">
-        <div class="emblem-circle">
-            <img
-                src="{{ url_for('static', filename='images/pup-logo.svg') }}"
-                alt="PUP Calauan emblem"
-                
-            >
-
-            <div id="fallbackEmblem" class="fallback-emblem">
-                <span>PUP</span>
-                <small>CALAUAN</small>
-            </div>
-        </div>
-
-        <p class="emblem-caption">
-            Learn. Track. Achieve.
-        </p>
     </div>
 </section>
 
@@ -91,9 +71,8 @@
 <style>
     .hero {
         display: grid;
-        grid-template-columns: 1.3fr 0.7fr;
+        grid-template-columns: 1fr;
         align-items: center;
-        gap: 40px;
         background: linear-gradient(135deg, #800000, #570000);
         color: white;
         padding: 55px 45px;
@@ -148,60 +127,6 @@
         background: transparent;
         border: 1px solid #f2cf70;
         color: white;
-    }
-
-    .hero-emblem {
-        text-align: center;
-    }
-
-    .emblem-circle {
-        width: 210px;
-        height: 210px;
-        border: 5px solid #d4a72c;
-        background: white;
-        border-radius: 50%;
-        margin: 0 auto;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        padding: 15px;
-        box-shadow: 0 10px 35px rgba(0, 0, 0, 0.25);
-    }
-
-    .emblem-circle img {
-        width: 100%;
-        height: 100%;
-        object-fit: contain;
-    }
-
-    .fallback-emblem {
-        display: none;
-        width: 100%;
-        height: 100%;
-        flex-direction: column;
-        justify-content: center;
-        align-items: center;
-        color: #800000;
-        border: 2px solid #d4a72c;
-        border-radius: 50%;
-    }
-
-    .fallback-emblem span {
-        font-size: 35px;
-        font-weight: 800;
-    }
-
-    .fallback-emblem small {
-        color: #800000;
-        letter-spacing: 3px;
-        font-weight: 700;
-    }
-
-    .emblem-caption {
-        color: #f2cf70;
-        font-weight: 500;
-        letter-spacing: 1px;
-        margin-top: 20px;
     }
 
     .features {
@@ -260,7 +185,6 @@
 
     @media (max-width: 750px) {
         .hero {
-            grid-template-columns: 1fr;
             padding: 35px 23px;
             text-align: center;
         }
@@ -272,11 +196,6 @@
 
         .hero-buttons {
             justify-content: center;
-        }
-
-        .emblem-circle {
-            width: 155px;
-            height: 155px;
         }
 
         .feature-grid {
