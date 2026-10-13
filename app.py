@@ -61,6 +61,8 @@ with app.app_context():
         'ALTER TABLE attendance ADD COLUMN IF NOT EXISTS check_out_time TIMESTAMP',
         'ALTER TABLE attendance ADD COLUMN IF NOT EXISTS status VARCHAR(50)',
         'ALTER TABLE attendance ADD COLUMN IF NOT EXISTS last_inside_at TIMESTAMP',
+        'ALTER TABLE attendance ADD COLUMN IF NOT EXISTS last_location_at TIMESTAMP',
+        'ALTER TABLE attendance ADD COLUMN IF NOT EXISTS location_status VARCHAR(30)',
         'ALTER TABLE attendance ADD COLUMN IF NOT EXISTS departure_alerted BOOLEAN DEFAULT FALSE',
 
         # FIX: Remove the old rule allowing only one attendance record per day.
@@ -237,6 +239,13 @@ class Attendance(db.Model):
 
     last_inside_at = db.Column(db.DateTime)
 
+    last_location_at = db.Column(db.DateTime)
+
+    location_status = db.Column(
+        db.String(30),
+        default='Location Lost'
+    )
+
     departure_alerted = db.Column(
         db.Boolean,
         default=False
@@ -377,6 +386,32 @@ def class_is_active(schedule, now=None):
     )
 
     return start <= now <= end
+
+
+LOCATION_LOST_TIMEOUT_SECONDS = 60
+
+
+def get_location_status(record, now=None):
+    """Return the live location status without changing attendance status."""
+    now = now or local_now()
+
+    if record.check_out_time:
+        return 'Checked Out'
+
+    if not record.check_in_time:
+        return 'Not Checked In'
+
+    if (
+        not record.last_location_at
+        or (now - record.last_location_at).total_seconds()
+        > LOCATION_LOST_TIMEOUT_SECONDS
+    ):
+        return 'Location Lost'
+
+    if record.location_status in ('On Campus', 'Outside Campus'):
+        return record.location_status
+
+    return 'Location Lost'
 
 
 def get_or_create_record(student, schedule, day=None):
@@ -553,7 +588,12 @@ def dashboard():
         student=student,
         schedules=schedules,
         records=records,
-        now=local_now()
+        now=local_now(),
+        tracking_active=any(
+            record.check_in_time and not record.check_out_time
+            and record.attendance_date == local_now().date()
+            for record in records
+        )
     )
 
 
@@ -606,6 +646,30 @@ def teacher_dashboard():
 
     db.session.commit()
 
+    location_rows = []
+
+    for sch in today_schedules:
+        students = User.query.filter_by(
+            role='student',
+            section=sch.section
+        ).order_by(User.username).all()
+
+        for student in students:
+            record = Attendance.query.filter_by(
+                user_id=student.id,
+                schedule_id=sch.id,
+                attendance_date=now.date()
+            ).first()
+
+            if record and record.check_in_time:
+                location_rows.append({
+                    'student': student,
+                    'schedule': sch,
+                    'record': record,
+                    'status': get_location_status(record, now),
+                    'last_update': record.last_location_at
+                })
+
     notices = Notice.query.filter_by(
         teacher_id=teacher_id
     ).order_by(
@@ -639,6 +703,7 @@ def teacher_dashboard():
         schedules=schedules,
         today_schedules=today_schedules,
         notices=notices,
+        location_rows=location_rows,
         stats=stats,
         day_names=[
             'Monday',
@@ -898,6 +963,9 @@ def check_in():
 
             record.check_in_time = now
             record.last_inside_at = now
+            record.last_location_at = now
+            record.location_status = 'On Campus'
+            record.departure_alerted = False
 
             grace = (
                 schedule.grace_minutes
@@ -964,6 +1032,7 @@ def check_out():
                 and not record.check_out_time
             ):
                 record.check_out_time = now
+                record.location_status = 'Checked Out'
                 count += 1
 
         db.session.commit()
@@ -1032,7 +1101,8 @@ def location_update():
     alerts = 0
 
     for schedule in active_classes_for_student(student, now):
-        if not class_is_active(schedule, now):
+        class_end = datetime.combine(now.date(), schedule.end_time)
+        if now > class_end:
             continue
 
         record = Attendance.query.filter_by(
@@ -1048,10 +1118,17 @@ def location_update():
         ):
             continue
 
+        record.last_location_at = now
+
         if inside:
             record.last_inside_at = now
+            record.location_status = 'On Campus'
+            record.departure_alerted = False
 
-        elif not record.departure_alerted:
+        else:
+            record.location_status = 'Outside Campus'
+
+        if not inside and not record.departure_alerted:
             message = (
                 f'{student.username} appears outside campus '
                 f'during {schedule.subject} ({schedule.section}) '
@@ -1074,6 +1151,7 @@ def location_update():
     return jsonify(
         ok=True,
         inside=inside,
+        location_status='On Campus' if inside else 'Outside Campus',
         alerts_created=alerts
     )
 
