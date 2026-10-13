@@ -669,58 +669,54 @@ def teacher_dashboard():
 # ADD CLASS SCHEDULE
 # ==========================================
 
+
 @app.route('/schedule/add', methods=['POST'])
 @login_required
 @role_required('teacher')
 def add_schedule():
     try:
-        subject = request.form.get(
-            'subject', ''
-        ).strip()
+        subject = request.form.get('subject', '').strip()
+        section = request.form.get('section', '').strip()
+        room = request.form.get('room', '').strip()
 
-        section = request.form.get(
-            'section', ''
-        ).strip()
+        # The form now sends the day as a number from 0 to 6.
+        day_value = request.form.get('day_of_week', '')
+        day = int(day_value)
 
-        room = request.form.get(
-            'room', ''
-        ).strip()
+        start_value = request.form.get('start_time', '')
+        end_value = request.form.get('end_time', '')
 
-        day = int(
-            request.form.get('day_of_week', '')
-        )
+        start = time.fromisoformat(start_value)
+        end = time.fromisoformat(end_value)
 
-        start = time.fromisoformat(
-            request.form.get('start_time', '')
-        )
+        grace = 10
 
-        end = time.fromisoformat(
-            request.form.get('end_time', '')
-        )
+        if not subject:
+            raise ValueError('Please enter a subject.')
 
-        grace = int(
-            request.form.get('grace_minutes', '10')
-        )
+        if not section:
+            raise ValueError('Please enter a section.')
 
-        if (
-            not subject
-            or not section
-            or day not in range(7)
-            or start >= end
-            or not 0 <= grace <= 120
-        ):
-            raise ValueError()
+        if day not in range(7):
+            raise ValueError('Please select a valid day.')
 
-    except (ValueError, TypeError):
+        if start >= end:
+            raise ValueError(
+                'End time must be later than start time.'
+            )
+
+    except (ValueError, TypeError) as error:
+        message = str(error)
+
+        if not message or message == 'invalid literal for int() with base 10:':
+            message = 'Please check the day and time fields.'
+
         flash(
-            'Please check the schedule details. '
-            'End time must be after start time.',
+            'Unable to add schedule. ' + message,
             'error'
         )
 
-        return redirect(
-            url_for('teacher_dashboard')
-        )
+        return redirect(url_for('teacher_dashboard'))
 
     schedule = Schedule(
         teacher_id=session['user_id'],
@@ -733,18 +729,29 @@ def add_schedule():
         grace_minutes=grace
     )
 
-    db.session.add(schedule)
-    db.session.commit()
+    try:
+        db.session.add(schedule)
+        db.session.commit()
+
+    except Exception:
+        db.session.rollback()
+
+        app.logger.exception('Failed to save class schedule')
+
+        flash(
+            'The schedule could not be saved. Please try again.',
+            'error'
+        )
+
+        return redirect(url_for('teacher_dashboard'))
 
     flash(
-        'Class schedule saved. Students in the matching '
-        'section can now see it.',
+        'Class schedule added successfully!',
         'success'
     )
 
-    return redirect(
-        url_for('teacher_dashboard')
-    )
+    return redirect(url_for('teacher_dashboard'))
+
 
 
 # ==========================================
