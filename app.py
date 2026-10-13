@@ -615,11 +615,7 @@ def dashboard():
                 (record is None or record.check_in_time is None)
                 and now > (
                     datetime.combine(now.date(), schedule.start_time)
-                    + timedelta(minutes=(
-                        schedule.grace_minutes
-                        if schedule.grace_minutes is not None
-                        else LATE_GRACE_MINUTES
-                    ))
+                    + timedelta(minutes=LATE_GRACE_MINUTES)
                 )
             )
         })
@@ -675,11 +671,7 @@ def teacher_dashboard():
             absent_after = (
                 datetime.combine(local_now().date(), sch.start_time)
                 + timedelta(
-                    minutes=(
-                        sch.grace_minutes
-                        if sch.grace_minutes is not None
-                        else LATE_GRACE_MINUTES
-                    )
+                    minutes=LATE_GRACE_MINUTES
                 )
             )
 
@@ -1090,11 +1082,7 @@ def check_in():
         record.location_status = 'On Campus'
         record.departure_alerted = False
 
-        grace = (
-            schedule.grace_minutes
-            if schedule.grace_minutes is not None
-            else LATE_GRACE_MINUTES
-        )
+        grace = LATE_GRACE_MINUTES
         late_after = (
             datetime.combine(now.date(), schedule.start_time)
             + timedelta(minutes=grace)
