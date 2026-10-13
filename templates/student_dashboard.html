@@ -200,9 +200,9 @@
                     <tr>
                         <td>{{ schedule.subject }}</td>
                         <td>{{ schedule.section }}</td>
-                        <td>{{ schedule.day }}</td>
-                        <td>{{ schedule.start_time }}</td>
-                        <td>{{ schedule.end_time }}</td>
+                        <td>{{ ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'][schedule.day_of_week] }}</td>
+                        <td>{{ schedule.start_time.strftime('%I:%M %p') }}</td>
+                        <td>{{ schedule.end_time.strftime('%I:%M %p') }}</td>
                     </tr>
                     {% endfor %}
                 </tbody>
@@ -221,8 +221,9 @@
             <table class="dashboard-table">
                 <thead>
                     <tr>
+                        <th>Class</th>
                         <th>Date</th>
-                        <th>Status</th>
+                        <th>Attendance Status</th>
                         <th>Check In</th>
                         <th>Check Out</th>
                     </tr>
@@ -230,10 +231,21 @@
                 <tbody>
                     {% for record in records %}
                     <tr>
-                        <td>{{ record.date }}</td>
-                        <td>{{ record.status }}</td>
-                        <td>{{ record.check_in or 'Not recorded' }}</td>
-                        <td>{{ record.check_out or 'Not recorded' }}</td>
+                        <td>{{ record.schedule.subject if record.schedule else 'Class' }}</td>
+                        <td>{{ record.attendance_date.strftime('%b %d, %Y') if record.attendance_date else 'Not recorded' }}</td>
+                        <td>
+                            {% if record.status == 'Late' %}
+                                <strong style="color: #c62828;">Late</strong>
+                            {% elif record.status == 'Present' %}
+                                <strong style="color: #16803c;">Present (On time)</strong>
+                            {% elif record.status == 'Absent' %}
+                                <strong style="color: #c62828;">Absent</strong>
+                            {% else %}
+                                {{ record.status or 'Not recorded' }}
+                            {% endif %}
+                        </td>
+                        <td>{{ record.check_in_time.strftime('%I:%M %p') if record.check_in_time else 'Not checked in' }}</td>
+                        <td>{{ record.check_out_time.strftime('%I:%M %p') if record.check_out_time else 'Not checked out' }}</td>
                     </tr>
                     {% endfor %}
                 </tbody>
