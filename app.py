@@ -2,6 +2,7 @@
 import os
 import math
 from datetime import datetime, date, time, timedelta
+from zoneinfo import ZoneInfo
 from functools import wraps
 
 from flask import (
@@ -11,6 +12,11 @@ from flask import (
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
 from sqlalchemy import text
+
+
+def local_now():
+    """Return current Philippines time as a timezone-naive datetime."""
+    return datetime.now(ZoneInfo('Asia/Manila')).replace(tzinfo=None)
 
 
 # ==========================================
@@ -865,7 +871,7 @@ def check_in():
         for schedule in active_classes_for_student(student, now)
         if (
             datetime.combine(now.date(), schedule.start_time)
-            - timedelta(minutes=60)
+            - timedelta(minutes=5)
             <= now
             <= datetime.combine(now.date(), schedule.end_time)
         )
@@ -904,7 +910,8 @@ def check_in():
                 + timedelta(minutes=grace)
             )
 
-            record.status = 'Late' if now > late_after else 'Present'
+            class_start = datetime.combine(now.date(), schedule.start_time)
+            record.status = 'Late' if now > class_start else 'Present'
             saved += 1
 
         db.session.commit()
