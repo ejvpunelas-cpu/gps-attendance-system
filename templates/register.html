@@ -1,22 +1,17 @@
 
 {% extends "base.html" %}
 
-{% block title %}Register | Campus Classroom{% endblock %}
+{% block title %}Register | Team Sarap Student Project{% endblock %}
 
 {% block content %}
 <section class="auth-container">
     <div class="auth-card">
 
         <div class="auth-header">
-            <img
-                src="{{ url_for('static', filename='images/pup-logo.png') }}"
-                alt="PUP Calauan Logo"
-                class="auth-logo"
-                onerror="this.style.display='none'"
-            >
+            <div class="auth-logo team-sarap-mark" aria-hidden="true">TS</div>
 
             <h1>Create Account</h1>
-            <p>Register for Campus Classroom.</p>
+            <p>Register for the Team Sarap Student Project.</p>
         </div>
 
         <form method="POST" action="{{ url_for('register') }}">
@@ -69,14 +64,33 @@
 
             <!-- STUDENT SECTION -->
             <div class="form-group" id="section-group">
-                <label for="section">Section</label>
+                <label for="course">Course</label>
+                <select id="course" required>
+                    <option value="">Choose your course</option>
+                    <option value="BTLED">BTLED</option>
+                    <option value="BSENT">BSENT</option>
+                    <option value="BSIT">BSIT</option>
+                </select>
 
-                <input
-                    type="text"
-                    id="section"
-                    name="section"
-                    placeholder="Example: BSIT 1-2"
-                >
+                <label for="year" style="margin-top:12px;">Year Level</label>
+                <select id="year" required>
+                    <option value="">Choose year</option>
+                    <option value="1">1st Year</option>
+                    <option value="2">2nd Year</option>
+                    <option value="3">3rd Year</option>
+                    <option value="4">4th Year</option>
+                </select>
+
+                <label for="section-number" style="margin-top:12px;">Section</label>
+                <select id="section-number" required>
+                    <option value="">Choose section</option>
+                    <option value="1">Section 1</option>
+                    <option value="2">Section 2</option>
+                    <option value="3">Section 3</option>
+                </select>
+
+                <input type="hidden" id="section" name="section">
+                <small>Your class will be saved in this format, for example: BSIT 4-2.</small>
             </div>
 
             <!-- TEACHER AUTHORIZATION CODE -->
@@ -175,8 +189,16 @@
 .auth-logo {
     width: 75px;
     height: 75px;
-    object-fit: contain;
-    margin-bottom: 12px;
+    margin: 0 auto 12px;
+}
+.team-sarap-mark {
+    display: grid;
+    place-items: center;
+    border-radius: 16px;
+    background: #d4a72c;
+    color: #570000;
+    font-size: 28px;
+    font-weight: 800;
 }
 
 .auth-header h1 {
@@ -258,6 +280,21 @@ document.addEventListener("DOMContentLoaded", function () {
 
     const sectionGroup = document.getElementById("section-group");
     const sectionInput = document.getElementById("section");
+    const courseSelect = document.getElementById("course");
+    const yearSelect = document.getElementById("year");
+    const sectionNumberSelect = document.getElementById("section-number");
+
+    function updateSectionValue() {
+        if (courseSelect.value && yearSelect.value && sectionNumberSelect.value) {
+            sectionInput.value = courseSelect.value + " " + yearSelect.value + "-" + sectionNumberSelect.value;
+        } else {
+            sectionInput.value = "";
+        }
+    }
+
+    [courseSelect, yearSelect, sectionNumberSelect].forEach(function (select) {
+        select.addEventListener("change", updateSectionValue);
+    });
 
     const teacherCodeGroup = document.getElementById("teacher-code-group");
     const teacherCodeInput = document.getElementById("teacher_code");
@@ -267,7 +304,9 @@ document.addEventListener("DOMContentLoaded", function () {
 
             // Hide the section field for teachers
             sectionGroup.style.display = "none";
-            sectionInput.required = false;
+            courseSelect.required = false;
+            yearSelect.required = false;
+            sectionNumberSelect.required = false;
             sectionInput.value = "";
 
             // Show the teacher authorization field
@@ -278,7 +317,10 @@ document.addEventListener("DOMContentLoaded", function () {
 
             // Show the section field for students
             sectionGroup.style.display = "block";
-            sectionInput.required = true;
+            courseSelect.required = true;
+            yearSelect.required = true;
+            sectionNumberSelect.required = true;
+            updateSectionValue();
 
             // Hide the teacher authorization field
             teacherCodeGroup.style.display = "none";
