@@ -319,11 +319,67 @@ window.setInterval(refreshLocationStatuses, 15000);
 
         </div>
 
+        <div id="section-schedule-preview" class="flash-message" style="display:none; margin-top:16px;">
+            <strong>Existing schedule for this section and day</strong>
+            <div id="section-schedule-preview-content" style="margin-top:8px;"></div>
+        </div>
+
         <button type="submit" class="teacher-button">
             Add Schedule
         </button>
     </form>
 </section>
+
+<script>
+(function () {
+    const sectionInput = document.getElementById('section');
+    const daySelect = document.getElementById('day_of_week');
+    const preview = document.getElementById('section-schedule-preview');
+    const content = document.getElementById('section-schedule-preview-content');
+
+    async function loadSectionSchedule() {
+        const section = sectionInput.value.trim();
+        const day = daySelect.value;
+
+        if (!section || day === '') {
+            preview.style.display = 'none';
+            content.textContent = '';
+            return;
+        }
+
+        try {
+            const params = new URLSearchParams({ section: section, day: day });
+            const response = await fetch('/schedule/section-preview?' + params.toString());
+            if (!response.ok) throw new Error('Could not load schedule');
+            const result = await response.json();
+
+            preview.style.display = 'block';
+            content.replaceChildren();
+
+            if (!result.schedules.length) {
+                content.textContent = 'No existing classes found for this section on the selected day.';
+                return;
+            }
+
+            const list = document.createElement('ul');
+            result.schedules.forEach(function (item) {
+                const entry = document.createElement('li');
+                entry.textContent = item.start + '–' + item.end + ' | ' +
+                    item.subject + ' | Prof. ' + item.teacher +
+                    (item.room ? ' | Room ' + item.room : '');
+                list.appendChild(entry);
+            });
+            content.appendChild(list);
+        } catch (error) {
+            preview.style.display = 'block';
+            content.textContent = 'Unable to load the existing schedule right now.';
+        }
+    }
+
+    sectionInput.addEventListener('input', loadSectionSchedule);
+    daySelect.addEventListener('change', loadSectionSchedule);
+})();
+</script>
 
 <section class="teacher-section">
     <h2>Today's Classes</h2>
