@@ -349,7 +349,7 @@ def role_required(role):
 # ==========================================
 
 def active_classes_for_student(student, now=None):
-    now = now or datetime.now()
+    now = now or local_now()
 
     return Schedule.query.filter_by(
         section=student.section,
@@ -358,7 +358,7 @@ def active_classes_for_student(student, now=None):
 
 
 def class_is_active(schedule, now=None):
-    now = now or datetime.now()
+    now = now or local_now()
 
     start = datetime.combine(
         now.date(),
@@ -374,7 +374,7 @@ def class_is_active(schedule, now=None):
 
 
 def get_or_create_record(student, schedule, day=None):
-    day = day or date.today()
+    day = day or local_now().date()
 
     record = Attendance.query.filter_by(
         user_id=student.id,
@@ -547,7 +547,7 @@ def dashboard():
         student=student,
         schedules=schedules,
         records=records,
-        now=datetime.now()
+        now=local_now()
     )
 
 
@@ -570,10 +570,10 @@ def teacher_dashboard():
 
     today_schedules = [
         s for s in schedules
-        if s.day_of_week == date.today().weekday()
+        if s.day_of_week == local_now().date().weekday()
     ]
 
-    now = datetime.now()
+    now = local_now()
 
     for sch in today_schedules:
         students = User.query.filter_by(
@@ -585,7 +585,7 @@ def teacher_dashboard():
             record = get_or_create_record(student, sch)
 
             absent_after = (
-                datetime.combine(date.today(), sch.start_time)
+                datetime.combine(local_now().date(), sch.start_time)
                 + timedelta(
                     minutes=(
                         sch.grace_minutes
@@ -619,7 +619,7 @@ def teacher_dashboard():
     for sch in today_schedules:
         records = Attendance.query.filter_by(
             schedule_id=sch.id,
-            attendance_date=date.today()
+            attendance_date=local_now().date()
         ).all()
 
         for record in records:
@@ -771,10 +771,10 @@ def delete_schedule(schedule_id):
 def teacher_attendance():
     try:
         selected_date = date.fromisoformat(
-            request.args.get('date', date.today().isoformat())
+            request.args.get('date', local_now().date().isoformat())
         )
     except ValueError:
-        selected_date = date.today()
+        selected_date = local_now().date()
 
     schedules = Schedule.query.filter_by(
         teacher_id=session['user_id']
@@ -820,7 +820,7 @@ def teacher_attendance():
 @role_required('student')
 def check_in():
     student = db.session.get(User, session['user_id'])
-    now = datetime.now()
+    now = local_now()
 
     def reply(message, ok=False, status=400):
         return jsonify(ok=ok, message=message), status
@@ -940,7 +940,7 @@ def check_in():
 @role_required('student')
 def check_out():
     student = db.session.get(User, session['user_id'])
-    now = datetime.now()
+    now = local_now()
     count = 0
 
     try:
@@ -991,7 +991,7 @@ def check_out():
 @role_required('student')
 def location_update():
     student = db.session.get(User, session['user_id'])
-    now = datetime.now()
+    now = local_now()
 
     try:
         lat = float(request.form['latitude'])
