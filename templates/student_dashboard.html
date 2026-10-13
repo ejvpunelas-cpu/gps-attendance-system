@@ -242,6 +242,7 @@ Tanginamo Trisha
 </section>
 
 <script>
+
 async function sendAttendance(endpoint) {
     const message = document.getElementById('attendance-message');
     const status = document.getElementById('location-status');
@@ -256,54 +257,78 @@ async function sendAttendance(endpoint) {
     message.textContent = 'Getting your location...';
     status.textContent = 'Requesting location permission...';
 
-    navigator.geolocation.getCurrentPosition(async position => {
-        const formData = new FormData();
-        formData.append('latitude', position.coords.latitude);
-        formData.append('longitude', position.coords.longitude);
-        formData.append('accuracy', position.coords.accuracy);
+    navigator.geolocation.getCurrentPosition(
+        async function(position) {
+            message.textContent = 'Location received. Contacting server...';
 
-        try {
-            const response = await fetch(endpoint, {
-                method: 'POST',
-                body: formData
-            });
+            const formData = new FormData();
+            formData.append('latitude', position.coords.latitude);
+            formData.append('longitude', position.coords.longitude);
+            formData.append('accuracy', position.coords.accuracy);
 
-            const result = await response.json();
+            try {
+                const response = await fetch(endpoint, {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'Accept': 'application/json'
+                    }
+                });
 
-            message.textContent =
-                result.message || result.error || 'Request completed.';
+                const contentType = response.headers.get('content-type') || '';
 
-            status.textContent = 'Location received successfully.';
+                if (contentType.includes('application/json')) {
+                    const result = await response.json();
 
-            if (response.ok) {
-                window.location.reload();
+                    message.textContent =
+                        result.message ||
+                        result.error ||
+                        'Server responded with status ' + response.status;
+
+                    if (response.ok) {
+                        window.location.reload();
+                        return;
+                    }
+                } else {
+                    message.textContent =
+                        'The server returned a page instead of JSON (HTTP ' +
+                        response.status +
+                        '). Check your Flask route and Render logs.';
+                }
+
+                status.textContent = 'Server responded, but the request was not completed.';
+            } catch (error) {
+                console.error('Check-in request failed:', error);
+                message.textContent =
+                    'Could not process the server response. Check your internet connection and Render logs.';
+                status.textContent = 'Server request failed.';
+            } finally {
+                buttons.forEach(button => button.disabled = false);
             }
-        } catch (error) {
-            message.textContent =
-                'Unable to contact the server. Please try again.';
-        } finally {
+        },
+        function(error) {
+            let errorMessage = 'Unable to get your location.';
+
+            if (error.code === error.PERMISSION_DENIED) {
+                errorMessage = 'Location permission was denied. Allow location access in your browser settings.';
+            } else if (error.code === error.POSITION_UNAVAILABLE) {
+                errorMessage = 'Your device could not determine your location. Try again outdoors.';
+            } else if (error.code === error.TIMEOUT) {
+                errorMessage = 'Location request timed out. Try again with a better GPS signal.';
+            }
+
+            message.textContent = errorMessage;
+            status.textContent = 'Location unavailable.';
             buttons.forEach(button => button.disabled = false);
+        },
+        {
+            enableHighAccuracy: false,
+            timeout: 30000,
+            maximumAge: 10000
         }
-    }, error => {
-        let errorMessage = 'Unable to get your location.';
-
-        if (error.code === error.PERMISSION_DENIED) {
-            errorMessage = 'Location permission was denied. Enable it in your browser settings.';
-        } else if (error.code === error.POSITION_UNAVAILABLE) {
-            errorMessage = 'Your current location is unavailable.';
-        } else if (error.code === error.TIMEOUT) {
-            errorMessage = 'Location request timed out. Try again.';
-        }
-
-        message.textContent = errorMessage;
-        status.textContent = 'Location unavailable.';
-        buttons.forEach(button => button.disabled = false);
-    }, {
-        enableHighAccuracy: true,
-        timeout: 15000,
-        maximumAge: 0
-    });
+    );
 }
+
 </script>
 {% endblock %}
 ```
