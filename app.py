@@ -10,6 +10,7 @@ from flask import (
 )
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
+from sqlalchemy import text
 
 
 # ==========================================
@@ -39,8 +40,12 @@ app.config['SQLALCHEMY_DATABASE_URI'] = database_url
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db = SQLAlchemy(app)
-# AUTO-FIX: add all missing columns on Render Postgres
-from sqlalchemy import text
+
+
+# ==========================================
+# DATABASE FIXES
+# ==========================================
+
 with app.app_context():
     fixes = [
         'ALTER TABLE "user" ADD COLUMN IF NOT EXISTS section VARCHAR(100)',
@@ -51,9 +56,14 @@ with app.app_context():
         'ALTER TABLE attendance ADD COLUMN IF NOT EXISTS status VARCHAR(50)',
         'ALTER TABLE attendance ADD COLUMN IF NOT EXISTS last_inside_at TIMESTAMP',
         'ALTER TABLE attendance ADD COLUMN IF NOT EXISTS departure_alerted BOOLEAN DEFAULT FALSE',
+
+        # FIX: Remove the old rule allowing only one attendance record per day.
+        'ALTER TABLE attendance DROP CONSTRAINT IF EXISTS one_checkin_per_day',
+
         # Absent students do not have a check-in timestamp.
         'ALTER TABLE attendance ALTER COLUMN check_in_time DROP NOT NULL'
     ]
+
     for sql in fixes:
         try:
             db.session.execute(text(sql))
@@ -61,6 +71,8 @@ with app.app_context():
         except Exception as e:
             db.session.rollback()
             print(f"Fix skipped: {sql} -> {e}")
+
+
 TEACHER_CODE = os.environ.get(
     'TEACHER_CODE',
     'TEACHER2026'
@@ -371,7 +383,6 @@ def get_or_create_record(student, schedule, day=None):
     ).first()
 
     if record is None:
-        # An absent student has not checked in, so this value must be NULL.
         record = Attendance(
             user_id=student.id,
             schedule_id=schedule.id,
@@ -405,25 +416,11 @@ def home():
 @app.route('/register', methods=['GET', 'POST'])
 def register():
     if request.method == 'POST':
-        username = request.form.get(
-            'username', ''
-        ).strip()
-
-        password = request.form.get(
-            'password', ''
-        )
-
-        role = request.form.get(
-            'role', 'student'
-        )
-
-        section = request.form.get(
-            'section', ''
-        ).strip()
-
-        code = request.form.get(
-            'teacher_code', ''
-        )
+        username = request.form.get('username', '').strip()
+        password = request.form.get('password', '')
+        role = request.form.get('role', 'student')
+        section = request.form.get('section', '').strip()
+        code = request.form.get('teacher_code', '')
 
         message = None
 
@@ -444,9 +441,7 @@ def register():
                 'Enter your class/section so schedules can be matched.'
             )
 
-        elif User.query.filter_by(
-            username=username
-        ).first():
+        elif User.query.filter_by(username=username).first():
             message = 'Username already exists.'
 
         if message:
@@ -485,22 +480,14 @@ def register():
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
-        username = request.form.get(
-            'username', ''
-        ).strip()
-
-        password = request.form.get(
-            'password', ''
-        )
+        username = request.form.get('username', '').strip()
+        password = request.form.get('password', '')
 
         user = User.query.filter_by(
             username=username
         ).first()
 
-        if user and check_password_hash(
-            user.password,
-            password
-        ):
+        if user and check_password_hash(user.password, password):
             session.clear()
 
             session.update(
@@ -529,7 +516,6 @@ def login():
 @app.route('/logout')
 def logout():
     session.clear()
-
     return redirect(url_for('home'))
 
 
@@ -541,14 +527,9 @@ def logout():
 @login_required
 def dashboard():
     if session['role'] == 'teacher':
-        return redirect(
-            url_for('teacher_dashboard')
-        )
+        return redirect(url_for('teacher_dashboard'))
 
-    student = db.session.get(
-        User,
-        session['user_id']
-    )
+    student = db.session.get(User, session['user_id'])
 
     schedules = sorted(
         active_classes_for_student(student),
@@ -601,27 +582,20 @@ def teacher_dashboard():
         ).all()
 
         for student in students:
-            record = get_or_create_record(
-                student,
-                sch
-            )
+            record = get_or_create_record(student, sch)
 
             absent_after = (
-                datetime.combine(
-                    date.today(),
-                    sch.start_time
-                )
+                datetime.combine(date.today(), sch.start_time)
                 + timedelta(
-                    minutes=sch.grace_minutes
-                    if sch.grace_minutes is not None
-                    else LATE_GRACE_MINUTES
+                    minutes=(
+                        sch.grace_minutes
+                        if sch.grace_minutes is not None
+                        else LATE_GRACE_MINUTES
+                    )
                 )
             )
 
-            if (
-                record.check_in_time is None
-                and now > absent_after
-            ):
+            if record.check_in_time is None and now > absent_after:
                 record.status = 'Absent'
 
     db.session.commit()
@@ -676,7 +650,6 @@ def teacher_dashboard():
 # ADD CLASS SCHEDULE
 # ==========================================
 
-
 @app.route('/schedule/add', methods=['POST'])
 @login_required
 @role_required('teacher')
@@ -686,7 +659,6 @@ def add_schedule():
         section = request.form.get('section', '').strip()
         room = request.form.get('room', '').strip()
 
-        # The form now sends the day as a number from 0 to 6.
         day_value = request.form.get('day_of_week', '')
         day = int(day_value)
 
@@ -742,7 +714,6 @@ def add_schedule():
 
     except Exception:
         db.session.rollback()
-
         app.logger.exception('Failed to save class schedule')
 
         flash(
@@ -752,13 +723,8 @@ def add_schedule():
 
         return redirect(url_for('teacher_dashboard'))
 
-    flash(
-        'Class schedule added successfully!',
-        'success'
-    )
-
+    flash('Class schedule added successfully!', 'success')
     return redirect(url_for('teacher_dashboard'))
-
 
 
 # ==========================================
@@ -787,19 +753,12 @@ def delete_schedule(schedule_id):
             'so it cannot be deleted.',
             'error'
         )
-
     else:
         db.session.delete(schedule)
         db.session.commit()
+        flash('Schedule deleted.', 'success')
 
-        flash(
-            'Schedule deleted.',
-            'success'
-        )
-
-    return redirect(
-        url_for('teacher_dashboard')
-    )
+    return redirect(url_for('teacher_dashboard'))
 
 
 # ==========================================
@@ -812,10 +771,7 @@ def delete_schedule(schedule_id):
 def teacher_attendance():
     try:
         selected_date = date.fromisoformat(
-            request.args.get(
-                'date',
-                date.today().isoformat()
-            )
+            request.args.get('date', date.today().isoformat())
         )
     except ValueError:
         selected_date = date.today()
@@ -830,9 +786,7 @@ def teacher_attendance():
         students = User.query.filter_by(
             role='student',
             section=schedule.section
-        ).order_by(
-            User.username
-        ).all()
+        ).order_by(User.username).all()
 
         for student in students:
             record = Attendance.query.filter_by(
@@ -841,11 +795,7 @@ def teacher_attendance():
                 attendance_date=selected_date
             ).first()
 
-            status = (
-                record.status
-                if record
-                else 'Absent'
-            )
+            status = record.status if record else 'Absent'
 
             rows.append({
                 'student': student,
@@ -864,7 +814,6 @@ def teacher_attendance():
 # ==========================================
 # STUDENT CHECK-IN
 # ==========================================
-
 
 @app.route('/check-in', methods=['POST'])
 @login_required
@@ -899,7 +848,10 @@ def check_in():
         )
 
     distance = distance_m(
-        CAMPUS_LATITUDE, CAMPUS_LONGITUDE, lat, lon
+        CAMPUS_LATITUDE,
+        CAMPUS_LONGITUDE,
+        lat,
+        lon
     )
 
     if distance > CAMPUS_RADIUS_METERS:
@@ -930,7 +882,9 @@ def check_in():
     try:
         for schedule in eligible:
             record = get_or_create_record(
-                student, schedule, now.date()
+                student,
+                schedule,
+                now.date()
             )
 
             if record.check_in_time is not None:
@@ -958,6 +912,7 @@ def check_in():
     except Exception:
         db.session.rollback()
         app.logger.exception('Failed to save student check-in')
+
         return reply(
             'The server could not save your attendance. Please try again.',
             status=500
@@ -976,11 +931,9 @@ def check_in():
     )
 
 
-
 # ==========================================
 # STUDENT CHECK-OUT
 # ==========================================
-
 
 @app.route('/check-out', methods=['POST'])
 @login_required
@@ -1011,6 +964,7 @@ def check_out():
     except Exception:
         db.session.rollback()
         app.logger.exception('Failed to save student check-out')
+
         return jsonify(
             ok=False,
             message='The server could not save your check-out.'
@@ -1036,11 +990,7 @@ def check_out():
 @login_required
 @role_required('student')
 def location_update():
-    student = db.session.get(
-        User,
-        session['user_id']
-    )
-
+    student = db.session.get(User, session['user_id'])
     now = datetime.now()
 
     try:
@@ -1049,10 +999,7 @@ def location_update():
         accuracy = float(request.form['accuracy'])
 
         if (
-            not all(
-                math.isfinite(v)
-                for v in (lat, lon, accuracy)
-            )
+            not all(math.isfinite(v) for v in (lat, lon, accuracy))
             or not -90 <= lat <= 90
             or not -180 <= lon <= 180
             or accuracy <= 0
@@ -1077,10 +1024,7 @@ def location_update():
 
     alerts = 0
 
-    for schedule in active_classes_for_student(
-        student,
-        now
-    ):
+    for schedule in active_classes_for_student(student, now):
         if not class_is_active(schedule, now):
             continue
 
@@ -1115,7 +1059,6 @@ def location_update():
             )
 
             db.session.add(notice)
-
             record.departure_alerted = True
             alerts += 1
 
@@ -1147,22 +1090,24 @@ def read_notice(notice_id):
     notice.read = True
     db.session.commit()
 
-    return redirect(
-        url_for('teacher_dashboard')
-    )
+    return redirect(url_for('teacher_dashboard'))
+
+
+# ==========================================
+# GPS TEST
+# ==========================================
+
+@app.route('/gps-test')
+def gps_test():
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+
+    return render_template('gps_test.html')
 
 
 # ==========================================
 # RUN THE APPLICATION
 # ==========================================
-
-@app.route("/gps-test")
-def gps_test():
-    if "user_id" not in session:
-        return redirect(url_for("login"))
-
-    return render_template("gps_test.html")
-
 
 if __name__ == '__main__':
     app.run(
