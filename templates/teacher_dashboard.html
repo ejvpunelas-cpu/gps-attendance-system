@@ -262,14 +262,33 @@ window.setInterval(refreshLocationStatuses, 15000);
             </div>
 
             <div class="form-group">
-                <label for="section">Section</label>
-                <input
-                    type="text"
-                    id="section"
-                    name="section"
-                    placeholder="Example: BSIT 1-2"
-                    required
-                >
+                <label for="course">Course</label>
+                <select id="course" required>
+                    <option value="">Choose course</option>
+                    <option value="BTLED">BTLED</option>
+                    <option value="BSENT">BSENT</option>
+                    <option value="BSIT">BSIT</option>
+                </select>
+
+                <label for="year" style="display:block;margin-top:12px;">Year Level</label>
+                <select id="year" required>
+                    <option value="">Choose year</option>
+                    <option value="1">1st Year</option>
+                    <option value="2">2nd Year</option>
+                    <option value="3">3rd Year</option>
+                    <option value="4">4th Year</option>
+                </select>
+
+                <label for="section-number" style="display:block;margin-top:12px;">Section</label>
+                <select id="section-number" required>
+                    <option value="">Choose section</option>
+                    <option value="1">Section 1</option>
+                    <option value="2">Section 2</option>
+                    <option value="3">Section 3</option>
+                </select>
+
+                <input type="hidden" id="section" name="section">
+                <small>Selected class will be saved like BSIT 4-2.</small>
             </div>
 
             <div class="form-group">
@@ -333,7 +352,19 @@ window.setInterval(refreshLocationStatuses, 15000);
 <script>
 (function () {
     const sectionInput = document.getElementById('section');
+    const courseSelect = document.getElementById('course');
+    const yearSelect = document.getElementById('year');
+    const sectionNumberSelect = document.getElementById('section-number');
     const daySelect = document.getElementById('day_of_week');
+
+    function updateSectionValue() {
+        if (courseSelect.value && yearSelect.value && sectionNumberSelect.value) {
+            sectionInput.value = courseSelect.value + ' ' + yearSelect.value + '-' + sectionNumberSelect.value;
+        } else {
+            sectionInput.value = '';
+        }
+        loadSectionSchedule();
+    }
     const preview = document.getElementById('section-schedule-preview');
     const content = document.getElementById('section-schedule-preview-content');
 
@@ -376,7 +407,9 @@ window.setInterval(refreshLocationStatuses, 15000);
         }
     }
 
-    sectionInput.addEventListener('input', loadSectionSchedule);
+    [courseSelect, yearSelect, sectionNumberSelect].forEach(function (select) {
+        select.addEventListener('change', updateSectionValue);
+    });
     daySelect.addEventListener('change', loadSectionSchedule);
 })();
 </script>
